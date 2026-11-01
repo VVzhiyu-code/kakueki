@@ -798,6 +798,25 @@ svg .kbox { fill: var(--plate); }
 .mir-sub { display: flex; justify-content: center; gap: 8px; }
 .mel-again { justify-self: center; margin-top: 4px; }
 .slot.has[data-a] { cursor: pointer; }
+
+/* 粤语音桥：词卡里的粤拼和假名对照 */
+.yue { display: grid; gap: 6px; width: 100%; text-align: left; }
+.yue-tag { font-size: 12px; color: var(--ink-3); }
+.yue-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.yue-t { display: grid; justify-items: center; min-width: 58px; padding: 5px 8px; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r); line-height: 1.35; }
+.yue-t b { font-family: var(--ja); font-size: 20px; font-weight: 700; }
+.yue-t small { font-family: var(--num); font-size: 15px; letter-spacing: .02em; color: var(--ink-2); }
+.yue-t i { font-family: var(--ja); font-style: normal; font-size: 15px; color: var(--ink); }
+.yue-t em { font-style: normal; font-weight: 700; color: var(--stamp); }
+.learn .yue-r, .fc-b .yue-r, .yue-r { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-2); text-wrap: pretty; }
+.yue-nb { white-space: nowrap; }
+.fc-b .yue { margin-top: 4px; }
+.yue-s { display: grid; gap: 6px; padding: 14px 16px; background: var(--plate); border: 1px solid var(--rule); border-radius: var(--r); }
+.yue-s p { margin: 0; font-size: 15px; }
+.yue-s .yue-r { font-size: 13px; }
+.yue-s .tiny { font-size: 12px; color: var(--ink-3); }
+.yue-s b { font-family: var(--num); font-size: 21px; font-weight: 600; }
+.yue-w { display: flex; flex-wrap: wrap; gap: 4px 10px; font-family: var(--ja); font-size: 15px; color: var(--ink-2); }
 </style>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="ink"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.1 1.550"/><feComposite in="SourceGraphic" operator="in"/></filter></svg>
 <div id="app"></div>
@@ -2599,12 +2618,12 @@ function exampleFor(w, l) {
   return SENT.filter(s => (p.plain ? plain(s.raw) : s.raw).includes(key)).sort((a, b) => rank(a) - rank(b))[0] || null;
 }
 function wordLearn(w, l) {
-  const bs = beats(w[1].replace(/[〜\s]/g, "")), ex = exampleFor(w, l), same = w[0].replace("〜", "") === w[2];
+  const bs = beats(w[1].replace(/[〜\s]/g, "")), ex = exampleFor(w, l), same = w[0].replace("〜", "") === w[2], yue = yueNote(w);
   return `<div class="learn"><div class="eyebrow">怎么读</div>
     ${pitchChart(w)}
     <p>一共 ${bs.length} 拍，每一拍一样长。点喇叭听，跟着读出声。</p>
     ${readTips(w[1]).map(t => `<p class="li">${t}</p>`).join("")}
-    ${same ? `<div class="eyebrow">怎么记</div><p>汉字和中文一样，意思也一样，只要记住读音。</p>` : ""}
+    ${same || yue ? `<div class="eyebrow">怎么记</div>` : ""}${same ? `<p>汉字和中文一样，意思也一样，只要记住读音。</p>` : ""}${yue}
     ${ex ? `<div class="eyebrow">怎么用</div>${exRow([ex.raw, ex.zh])}` : ""}</div>`;
 }
 
@@ -2794,7 +2813,7 @@ function bookView() {
     <section class="panel"><div class="eyebrow">打卡日历</div>${calendar()}</section>
     <section class="panel"><div class="eyebrow">成就 ${Object.keys(S.ba).length} / ${BADGES.length}</div>${badgeHtml()}</section>
     <section><div class="eyebrow" style="margin-bottom:10px">站台纪念章 ${Object.keys(S.done).length} / ${LESSONS.length}</div>
-    <div class="stamps">${LESSONS.map(l => S.done[l.id] ? `<div class="slot has" data-a="melody" data-v="${l.id}" role="button" tabindex="0" aria-label="听第 ${l.id} 站的发车旋律">${stampSvg(l, S.done[l.id].d)}</div>` : `<div class="slot">${code(l.id)}</div>`).join("")}</div></section></div>
+    ${yueStatsHtml()}<div class="stamps">${LESSONS.map(l => S.done[l.id] ? `<div class="slot has" data-a="melody" data-v="${l.id}" role="button" tabindex="0" aria-label="听第 ${l.id} 站的发车旋律">${stampSvg(l, S.done[l.id].d)}</div>` : `<div class="slot">${code(l.id)}</div>`).join("")}</div></section></div>
     <div class="grid"><section class="panel"><div class="stats"><div><b>${streak()}</b><span>连续天数</span></div><div><b>${days}</b><span>学习天数</span></div><div><b>${words}</b><span>学过的词</span></div><div><b>${S.xp}</b><span>总里程 · ${l.n} 级</span></div></div></section>
     <section class="panel"><div class="eyebrow">N5 词汇掌握</div>${masteryBar()}</section>
     <section class="panel"><div class="eyebrow">顽固词</div>${stubbornList()}</section>
@@ -3012,6 +3031,184 @@ function pitchChart(w) {
 Object.assign(ACT, {
   setPitch() { S.set.pitch = !pitchOn(); save(); render(); },
 });
+
+/* ---------- 粤语音桥数据 ----------
+   自动生成，生成脚本不在项目里。只收音读词里规律解释得了的字，训读、外来语、和语都不收。
+   每项：词|假名 → [字, 粤拼, 这个字在词里的假名, 规律, 促音化前的读法（没有促音化就没有这一项）]
+   规律：k t p m n ng 看韵尾，h g(ng-) f b(b-/p-) j 看声母
+   粤拼来源：rime-cantonese 字表和词表 jyut6ping3.chars / words，版本 2026.08.10，
+   CanCLID，https://github.com/rime/rime-cantonese，许可 CC BY 4.0（https://creativecommons.org/licenses/by/4.0/）。多音字按词表取，词表没有的词人工按词义定。
+   本数据由上述字表、词表筛选加工而成。 */
+const YUE_WORDS = {
+  "学校|がっこう": [["学","hok6","がっ","k,h","がく"],["校","haau6","こう","h"]],
+  "東京|とうきょう": [["東","dung1","とう","ng"],["京","ging1","きょう","ng"]],
+  "病院|びょういん": [["病","beng6","びょう","ng,b"],["院","jyun2","いん","n,j"]],
+  "美容院|びよういん": [["容","jung4","よう","ng,j"],["院","jyun2","いん","n,j"]],
+  "日本|にほん": [["本","bun2","ほん","n,b"]],
+  "学生|がくせい": [["学","hok6","がく","k,h"],["生","saang1","せい","ng"]],
+  "先生|せんせい": [["先","sin1","せん","n"],["生","saang1","せい","ng"]],
+  "中国人|ちゅうごくじん": [["中","zung1","ちゅう","ng"],["国","gwok3","ごく","k"],["人","jan4","じん","n"]],
+  "日本人|にほんじん": [["本","bun2","ほん","n,b"],["人","jan4","じん","n"]],
+  "会社員|かいしゃいん": [["員","jyun4","いん","n,j"]],
+  "医者|いしゃ": [["医","ji1","い","j"]],
+  "銀行員|ぎんこういん": [["銀","ngan4","ぎん","n,g"],["行","hong4","こう","ng,h"],["員","jyun4","いん","n,j"]],
+  "大学|だいがく": [["学","hok6","がく","k,h"]],
+  "日本語|にほんご": [["本","bun2","ほん","n,b"]],
+  "家族|かぞく": [["族","zuk6","ぞく","k"]],
+  "一|いち": [["一","jat1","いち","t,j"]],
+  "三|さん": [["三","saam1","さん","m"]],
+  "五|ご": [["五","ng5","ご","g"]],
+  "六|ろく": [["六","luk6","ろく","k"]],
+  "八|はち": [["八","baat3","はち","t,b"]],
+  "十|じゅう": [["十","sap6","じゅう","p"]],
+  "電話番号|でんわばんごう": [["電","din6","でん","n"],["番","faan1","ばん","n,f"],["号","hou6","ごう","h"]],
+  "本|ほん": [["本","bun2","ほん","n,b"]],
+  "雑誌|ざっし": [["雑","zaap6","ざっ","p","ざつ"]],
+  "新聞|しんぶん": [["新","san1","しん","n"],["聞","man2","ぶん","n"]],
+  "駅|えき": [["駅","jik6","えき","k,j"]],
+  "教室|きょうしつ": [["室","sat1","しつ","t"]],
+  "百|ひゃく": [["百","baak3","ひゃく","k,b"]],
+  "千|せん": [["千","cin1","せん","n"]],
+  "万|まん": [["万","maan6","まん","n"]],
+  "円|えん": [["円","jyun4","えん","n,j"]],
+  "〜分|ふん": [["分","fan1","ふん","n,f"]],
+  "半|はん": [["半","bun3","はん","n,b"]],
+  "午前|ごぜん": [["午","ng5","ご","g"],["前","cin4","ぜん","n"]],
+  "午後|ごご": [["午","ng5","ご","g"],["後","hau6","ご","h"]],
+  "毎日|まいにち": [["日","jat6","にち","t"]],
+  "電車|でんしゃ": [["電","din6","でん","n"]],
+  "ご飯|ごはん": [["飯","faan6","はん","n,f"]],
+  "映画|えいが": [["映","jing2","えい","ng,j"]],
+  "音楽|おんがく": [["音","jam1","おん","m,j"],["楽","ngok6","がく","k,g"]],
+  "勉強します|べんきょうします": [["勉","min5","べん","n"],["強","koeng5","きょう","ng"]],
+  "図書館|としょかん": [["館","gun2","かん","n"]],
+  "先週|せんしゅう": [["先","sin1","せん","n"]],
+  "週末|しゅうまつ": [["末","mut6","まつ","t"]],
+  "一緒に|いっしょに": [["一","jat1","いっ","t,j","いち"]],
+  "公園|こうえん": [["公","gung1","こう","ng"],["園","jyun2","えん","n,j"]],
+  "元気|げんき": [["元","jyun4","げん","n"],["気","hei3","き","h"]],
+  "有名|ゆうめい": [["有","jau5","ゆう","j"],["名","meng2","めい","ng"]],
+  "便利|べんり": [["便","bin6","べん","n,b"]],
+  "親切|しんせつ": [["親","can1","しん","n"],["切","cit3","せつ","t"]],
+  "簡単|かんたん": [["簡","gaan2","かん","n"],["単","daan1","たん","n"]],
+  "天気|てんき": [["天","tin1","てん","n"],["気","hei3","き","h"]],
+  "旅行|りょこう": [["行","hang4","こう","ng,h"]],
+  "肉|にく": [["肉","juk6","にく","k"]],
+  "自転車|じてんしゃ": [["転","zyun3","てん","n"]],
+  "京都|きょうと": [["京","ging1","きょう","ng"]],
+  "温泉|おんせん": [["温","wan1","おん","n"],["泉","cyun4","せん","n"]],
+  "写真|しゃしん": [["真","zan1","しん","n"]],
+  "時間|じかん": [["間","gaan3","かん","n"]],
+  "今晩|こんばん": [["今","gam1","こん","m"],["晩","maan5","ばん","n"]],
+  "大変|たいへん": [["変","bin3","へん","n,b"]],
+  "中国|ちゅうごく": [["中","zung1","ちゅう","ng"],["国","gwok3","ごく","k"]],
+  "晩|ばん": [["晩","maan5","ばん","n"]],
+  "来年|らいねん": [["年","nin4","ねん","n"]],
+  "去年|きょねん": [["去","heoi3","きょ","h"],["年","nin4","ねん","n"]],
+  "今月|こんげつ": [["今","gam1","こん","m"],["月","jyut6","げつ","t"]],
+  "来月|らいげつ": [["月","jyut6","げつ","t"]],
+  "先月|せんげつ": [["先","sin1","せん","n"],["月","jyut6","げつ","t"]],
+  "今週|こんしゅう": [["今","gam1","こん","m"]],
+  "銀行|ぎんこう": [["銀","ngan4","ぎん","n,g"],["行","hong4","こう","ng,h"]],
+  "郵便局|ゆうびんきょく": [["郵","jau4","ゆう","j"],["便","bin6","びん","n,b"],["局","guk6","きょく","k"]],
+  "外国|がいこく": [["外","ngoi6","がい","g"],["国","gwok3","こく","k"]],
+  "喫茶店|きっさてん": [["店","dim3","てん","m"]],
+  "食堂|しょくどう": [["食","sik6","しょく","k"],["堂","tong4","どう","ng"]],
+  "交番|こうばん": [["番","faan1","ばん","n,f"]],
+  "野菜|やさい": [["野","je5","や","j"]],
+  "牛乳|ぎゅうにゅう": [["牛","ngau4","ぎゅう","g"]],
+  "鉛筆|えんぴつ": [["鉛","jyun4","えん","n,j"],["筆","bat1","ぴつ","t,b"]],
+  "電話|でんわ": [["電","din6","でん","n"]],
+  "椅子|いす": [["椅","ji2","い","j"]],
+  "服|ふく": [["服","fuk6","ふく","k,f"]],
+  "地下鉄|ちかてつ": [["下","haa6","か","h"],["鉄","tit3","てつ","t"]],
+  "飛行機|ひこうき": [["飛","fei1","ひ","f"],["行","hang4","こう","ng,h"]],
+  "勉強する|べんきょうする": [["勉","min5","べん","n"],["強","koeng5","きょう","ng"]],
+  "大丈夫|だいじょうぶ": [["丈","zoeng6","じょう","ng"],["夫","fu1","ぶ","f"]],
+};
+
+/* ---------- 粤语音桥 ----------
+   词卡“怎么记”一栏：显示这个词里规律解释得了的字，粤拼和假名对照，再说一句规律。
+   只显示 YUE_WORDS 收录的词，没收录就返回空字符串 */
+const YUE_RULE = {
+  k: "粤语 -k 收尾，日语常变成 く 或 き。",
+  t: "粤语 -t 收尾，日语常变成 つ 或 ち。",
+  p: "粤语 -p 收尾，现代日语多成长音（古时写作 ふ）。",
+  m: "粤语 -m 收尾，日语写成 ん（-n 也一样）。",
+  n: "粤语 -n 收尾，日语写成 ん（-m 也一样）。",
+  mn: "粤语 -m、-n 收尾，日语都写成 ん。",
+  ng: "粤语 -ng 收尾，日语常变成 う 或 い。",
+  h: "粤语 h- 开头，日语常在 か行，有时是 が行。",
+  g: "粤语 ng- 开头，日语常在 が行。",
+  f: "粤语 f- 开头，日语常在 は行 或 ば行，这条只当趋势看。",
+  b: "粤语 b-、p- 开头，日语常在 は行（包括 ば行、ぱ行）。",
+  j: "粤语 j- 开头，日语常在 や行，或者直接元音开头。",
+};
+const YUE_ORDER = ["k", "t", "p", "m", "n", "ng", "h", "g", "f", "b", "j"];
+const YUE_MAX = 3;  // 一张卡最多说三条，再多就读不完了
+const yueEntry = w => YUE_WORDS[`${w[0]}|${w[1]}`];
+const yueCodes = t => t[3].split(",");
+/* 促音化的字单独讲：-k 只在 か行 前变，-t、-p 在 か さ た は 行前变 */
+function yueSoku(t, kana) {
+  const next = kana[kana.indexOf("っ") + 1], coda = yueCodes(t)[0], nb = x => `<span class="yue-nb" lang="ja">${x}</span>`;
+  const where = coda === "k" ? "か行" : "か、さ、た、は 行";
+  return `${t[0]} 本来读 ${nb(t[4])}。粤语 -${coda} 收尾的入声字，后面接 ${nb(where)}（这里是 ${nb(next)}）时，尾音常缩成促音 っ，所以读 ${nb(kana)}。`;
+}
+/* 按顺序挑要说的规律。没说到的规律不高亮，一条都没说到的字不显示 */
+function yuePick(tiles, kana) {
+  const soku = tiles.filter(t => t[4]);
+  const used = new Set(tiles.flatMap(yueCodes));
+  soku.forEach(t => used.delete(yueCodes(t)[0]));
+  const picks = YUE_ORDER.filter(c => used.has(c) && !(c === "n" && used.has("m"))).slice(0, Math.max(0, YUE_MAX - soku.length));
+  const said = new Set(picks);
+  if (said.has("m") && used.has("n")) said.add("n");
+  const lines = [...soku.map(t => yueSoku(t, kana)), ...picks.map(c => c === "m" && said.has("n") ? YUE_RULE.mn : YUE_RULE[c])];
+  return { said, lines };
+}
+function yueJp(j, codes) {
+  const m = j.match(/^(ng|gw|kw|[bpmfdtnlgkhwzcsj]?)(.*?)(ng|[ptkmn]|)([1-6])$/);
+  if (!m) return j;
+  const mark = (s, on) => s && on ? `<em>${s}</em>` : s;
+  const ini = codes.some(c => c === "g" ? m[1] === "ng" : c === "b" ? /^[bp]$/.test(m[1]) : "hfj".includes(c) && c === m[1]);
+  return mark(m[1], ini) + m[2] + mark(m[3], codes.includes(m[3])) + m[4];
+}
+function yueKana(f, codes, soku) {
+  const coda = soku || codes.some(c => ["k", "t", "p", "m", "n", "ng"].includes(c));
+  const ini = codes.some(c => ["h", "g", "f", "b", "j"].includes(c));
+  const head = f.match(/^.[ゃゅょ]?/)[0], rest = f.slice(head.length);
+  if (!rest) return ini || coda ? `<em>${f}</em>` : f;
+  return (ini ? `<em>${head}</em>` : head) + (coda ? rest.slice(0, -1) + `<em>${rest.slice(-1)}</em>` : rest);
+}
+function yueNote(w) {
+  const tiles = yueEntry(w);
+  if (!tiles) return "";
+  const { said, lines } = yuePick(tiles, w[1]);
+  const on = t => yueCodes(t).filter((c, i) => said.has(c) || (t[4] && i === 0));
+  const row = tiles.filter(t => on(t).length).map(t => `<span class="yue-t"><b lang="ja">${t[0]}</b><small>${yueJp(t[1], on(t))}</small><i lang="ja">${yueKana(t[2], on(t), !!t[4])}</i></span>`).join("");
+  return `<div class="yue"><div class="yue-tag">粤语音桥</div><div class="yue-row">${row}</div>${lines.map(s => `<p class="yue-r">${s}</p>`).join("")}</div>`;
+}
+/* 统计只算到过的站里的词 */
+function yueStats() {
+  const all = new Set(), got = new Map(), by = {};
+  for (const l of LESSONS) for (const w of l.words) {
+    const key = `${w[0]}|${w[1]}`, tiles = YUE_WORDS[key];
+    if (!tiles) continue;
+    all.add(key);
+    if (!S.done[l.id] || got.has(key)) continue;
+    got.set(key, w);
+    for (const t of tiles) for (const c of yueCodes(t)) by[c] = (by[c] || 0) + 1;
+  }
+  return { n: got.size, total: all.size, words: [...got.values()], by };
+}
+function yueStatsHtml() {
+  const s = yueStats();
+  if (!s.n) return `<section class="yue-s"><div class="eyebrow">粤语音桥</div><p>学完第一站后，这里会列出你的粤语帮你解开的词。</p></section>`;
+  const top = YUE_ORDER.filter(c => s.by[c]).sort((a, b) => s.by[b] - s.by[a]).slice(0, 3);
+  return `<section class="yue-s"><div class="eyebrow">粤语音桥</div><p>你的粤语已经帮你解开了 <b>${s.n}</b> 个词。</p>
+    <div class="yue-w">${s.words.map(w => `<span lang="ja">${w[0]}</span>`).join("")}</div>
+    ${top.map(c => `<p class="yue-r">${YUE_RULE[c]}</p>`).join("")}
+    <p class="tiny">粤拼数据来自 rime-cantonese，CC BY 4.0，经筛选加工。</p></section>`;
+}
 /* ---------- 音高镜 ----------
    把用户的跟读和原声画在同一张图上。两边走同一套算法：取基频，换算成相对自己中位数的半音，
    所以男女声可以直接比。全部在本机计算，录音不存也不上传。*/
@@ -4146,6 +4343,7 @@ function cardBack(st) {
     ${w[3] ? `<div class="fc-pos">${esc(POS_NOTE[w[3]] || w[3])}${w[6] ? ` · ます形 <span lang="ja">${w[6]}</span>` : ""}</div>` : ""}
     <div class="card-btns center">${soundBtn(w[1])}<button class="chip" data-a="slow" data-v="${esc(w[1])}">慢速听</button>${mirBtn(w)}</div>
     ${tips.map(t => `<p class="tiny">${t}</p>`).join("")}
+    ${yueNote(w)}
     ${ex ? exRow(ex) : ""}`;
 }
 Object.assign(KSTEP, {
