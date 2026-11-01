@@ -30,6 +30,8 @@
   --u0: #c8352b; --u1: #24509a; --u2: #2c7a4b; --u3: #8a3a8f; --u4: #b06a00;
   /* 蓝色圆珠笔和黄色荧光笔：注音用笔，常错的假名用荧光笔涂一下 */
   --pen: #1c5fa8; --mark: #ffe97a;
+  /* 声调线：高音红，低音蓝 */
+  --p-hi: #d23b2f; --p-lo: #2f6fbf;
   /* 校园笔记本：白纸、淡蓝横线、左侧红色边线 */
   --nb: #fdfefe; --nb-dot: #dfe8ef; --nb-rule: #cddfee; --nb-edge: #efb3ab; --nb-ink: #1b2a33; --stick: #fff4b8; --stick-ink: #3b3512;
   /* 发车案内和车票：不随主题变化的实物颜色 */
@@ -49,6 +51,7 @@
     --h1: #2a3d1c; --h2: #4d7a24; --h3: #7bb12f; --h4: #b5e05a; --on-h4: #10190c;
     --u0: #f0735f; --u1: #7fa8ee; --u2: #6cc792; --u3: #d08ad4; --u4: #e7ad4a;
     --pen: #8cc6f7; --mark: #6a5a10;
+    --p-hi: #ff8a78; --p-lo: #7fb6f2;
     --nb: #151c20; --nb-dot: #232f37; --nb-rule: #2a3843; --nb-edge: #6a3a35; --nb-ink: #e2eaef; --stick: #3a3516; --stick-ink: #f3ecc4;
     --ticket: #1d2b1f; --ticket-dot: #2f4531; --ticket-ink: #d3e6d3;
     color-scheme: dark;
@@ -61,6 +64,7 @@
   --h1: #2a3d1c; --h2: #4d7a24; --h3: #7bb12f; --h4: #b5e05a; --on-h4: #10190c;
   --u0: #f0735f; --u1: #7fa8ee; --u2: #6cc792; --u3: #d08ad4; --u4: #e7ad4a;
   --pen: #8cc6f7; --mark: #6a5a10;
+  --p-hi: #ff8a78; --p-lo: #7fb6f2;
   --nb: #151c20; --nb-dot: #232f37; --nb-rule: #2a3843; --nb-edge: #6a3a35; --nb-ink: #e2eaef; --stick: #3a3516; --stick-ink: #f3ecc4;
   --ticket: #1d2b1f; --ticket-dot: #2f4531; --ticket-ink: #d3e6d3;
   color-scheme: dark;
@@ -743,6 +747,32 @@ svg .kbox { fill: var(--plate); }
 .s-note { font-size: 12px; color: var(--ink-3); }
 #backup-zone.drag { outline: 2px dashed var(--line-deep); outline-offset: 2px; }
 .btn.ghost:disabled { color: var(--ink-3); background: none; }
+
+/* 声调线 */
+.pt { display: inline-flex; padding-top: 3px; }
+.pt span { display: inline-block; padding-inline: .5px; border-top: 1.5px solid transparent; line-height: 1.35; }
+.pt .hi { border-top-color: var(--p-hi); }
+.pt .up { border-left: 1.5px solid var(--p-hi); }
+.pt .dn { border-right: 1.5px solid var(--p-hi); }
+.pitch { display: grid; gap: 2px; width: 100%; max-width: calc(var(--n) * 50px); }
+.pitch svg { display: block; width: 100%; height: auto; overflow: visible; }
+.pitch polyline { fill: none; stroke: var(--ink-2); stroke-width: 2; stroke-linejoin: round; }
+.p-next { stroke: var(--ink-3); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.pitch .p-h { fill: var(--p-hi); }
+.pitch .p-l { fill: var(--p-lo); }
+.pitch .p-o { fill: var(--plate); stroke: var(--ink-3); stroke-width: 1.5; }
+.pitch .beats { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 2px; }
+.pitch .beats span { min-width: 0; padding-inline: 0; }
+.pitch .p-part { color: var(--ink-3); background: none; font-weight: 500; }
+.pitch .p-part i { color: var(--ink-3); font-family: var(--zh); font-size: 11px; }
+.p-tip { font-size: 14px; color: var(--ink-2); text-wrap: pretty; }
+.p-tip b { color: var(--ink); }
+.p-demo { display: grid; gap: 14px; margin-block: 10px; }
+.nw-r { font-family: var(--ja); font-size: 15px; color: var(--ink-2); }
+@media (min-width: 600px) { .p-demo { grid-template-columns: 1fr 1fr; } }
+@media print {
+  .pt .hi, .pt .up, .pt .dn { border-color: #d23b2f; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}
 </style>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="ink"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.1 1.550"/><feComposite in="SourceGraphic" operator="in"/></filter></svg>
 <div id="app"></div>
@@ -2079,6 +2109,8 @@ const KSTROKE = {
   ヲ: "26 28 50 26 74 25|29 46 47 44 67 43|74 25 67 43 53 66 27 88",
   ン: "22 29 30 33 42 40|26 80 35 77 60 63 88 36",
 };
+/* 单词的声调，由 gen_accent.js 生成。数据来自 Kanjium，CC BY-SA 4.0 */
+const ACCENT = {"学校|がっこう":0,"切手|きって":0,"東京|とうきょう":0,"お母さん|おかあさん":2,"病院|びょういん":0,"美容院|びよういん":2,"日本|にほん":2,"おはようございます|おはようございます":8,"こんにちは|こんにちは":5,"こんばんは|こんばんは":5,"ありがとうございます|ありがとうございます":9,"すみません|すみません":4,"さようなら|さようなら":4,"おやすみなさい|おやすみなさい":6,"私|わたし":0,"学生|がくせい":0,"先生|せんせい":3,"中国人|ちゅうごくじん":4,"日本人|にほんじん":4,"会社員|かいしゃいん":3,"はい|はい":1,"いいえ|いいえ":3,"そうです|そうです":1,"医者|いしゃ":0,"銀行員|ぎんこういん":3,"エンジニア|エンジニア":3,"誰|だれ":1,"友達|ともだち":0,"大学|だいがく":0,"日本語|にほんご":0,"名前|なまえ":0,"会社|かいしゃ":0,"家族|かぞく":1,"一|いち":2,"二|に":1,"三|さん":0,"四|よん":1,"五|ご":1,"六|ろく":2,"七|なな":1,"八|はち":2,"九|きゅう":1,"十|じゅう":1,"電話番号|でんわばんごう":4,"これ|これ":0,"それ|それ":0,"あれ|あれ":0,"本|ほん":1,"傘|かさ":1,"鞄|かばん":0,"雑誌|ざっし":0,"何|なん":1,"この|この":0,"その|その":0,"あの|あの":0,"時計|とけい":0,"車|くるま":0,"人|ひと":0,"新聞|しんぶん":0,"ここ|ここ":0,"そこ|そこ":0,"あそこ|あそこ":0,"どこ|どこ":1,"駅|えき":1,"トイレ|トイレ":1,"教室|きょうしつ":0,"百|ひゃく":2,"千|せん":1,"万|まん":1,"円|えん":1,"いくら|いくら":1,"お金|おかね":0,"コーヒー|コーヒー":3,"パン|パン":1,"今|いま":1,"何時|なんじ":1,"半|はん":1,"午前|ごぜん":1,"午後|ごご":1,"今日|きょう":1,"明日|あした":3,"昨日|きのう":2,"毎日|まいにち":1,"何曜日|なんようび":3,"月曜日|げつようび":3,"金曜日|きんようび":3,"日曜日|にちようび":3,"休み|やすみ":3,"行きます|いきます":3,"来ます|きます":2,"帰ります|かえります":4,"電車|でんしゃ":0,"バス|バス":1,"家|うち":0,"来週|らいしゅう":0,"食べます|たべます":3,"飲みます|のみます":3,"見ます|みます":2,"読みます|よみます":3,"聞きます|ききます":3,"ご飯|ごはん":1,"水|みず":0,"映画|えいが":1,"音楽|おんがく":1,"買います|かいます":3,"書きます|かきます":3,"勉強します|べんきょうします":6,"手紙|てがみ":0,"店|みせ":2,"図書館|としょかん":2,"スーパー|スーパー":1,"部屋|へや":2,"起きます|おきます":3,"寝ます|ねます":2,"働きます|はたらきます":5,"朝|あさ":1,"昼|ひる":2,"夜|よる":1,"毎朝|まいあさ":1,"します|します":2,"先週|せんしゅう":0,"今朝|けさ":1,"週末|しゅうまつ":0,"何も|なにも":1,"どこへも|どこへも":1,"会います|あいます":3,"休みます|やすみます":4,"一緒に|いっしょに":0,"お茶|おちゃ":0,"昼ご飯|ひるごはん":3,"公園|こうえん":0,"飲み物|のみもの":2,"ちょっと|ちょっと":1,"いいですね|いいですね":1,"あります|あります":3,"います|います":2,"上|うえ":0,"下|した":0,"前|まえ":1,"机|つくえ":0,"猫|ねこ":1,"犬|いぬ":2,"一つ|ひとつ":2,"二つ|ふたつ":3,"三つ|みっつ":3,"四つ|よっつ":3,"五つ|いつつ":2,"一人|ひとり":2,"二人|ふたり":3,"何人|なんにん":1,"いくつ|いくつ":1,"りんご|りんご":0,"大きい|おおきい":3,"小さい|ちいさい":3,"高い|たかい":2,"安い|やすい":2,"新しい|あたらしい":4,"古い|ふるい":2,"おいしい|おいしい":3,"暑い|あつい":2,"寒い|さむい":2,"きれい|きれい":1,"静か|しずか":1,"元気|げんき":1,"有名|ゆうめい":0,"便利|べんり":1,"親切|しんせつ":1,"暇|ひま":0,"町|まち":2,"とても|とても":0,"あまり|あまり":0,"楽しい|たのしい":3,"難しい|むずかしい":4,"簡単|かんたん":0,"天気|てんき":1,"旅行|りょこう":0,"テスト|テスト":1,"好き|すき":2,"嫌い|きらい":0,"上手|じょうず":3,"下手|へた":2,"料理|りょうり":1,"歌|うた":2,"スポーツ|スポーツ":2,"魚|さかな":0,"肉|にく":2,"欲しい|ほしい":2,"自転車|じてんしゃ":2,"カメラ|カメラ":1,"靴|くつ":2,"京都|きょうと":1,"温泉|おんせん":0,"寿司|すし":2,"写真|しゃしん":0,"撮ります|とります":3,"どうして|どうして":1,"忙しい|いそがしい":4,"時間|じかん":0,"風邪|かぜ":0,"今晩|こんばん":1,"でも|でも":1,"大変|たいへん":0,"待ちます|まちます":3,"話します|はなします":4,"言います|いいます":3,"座ります|すわります":4,"教えます|おしえます":4,"ゆっくり|ゆっくり":3,"わかりました|わかりました":4,"雨|あめ":1,"降ります|ふります":3,"住みます|すみます":3,"持ちます|もちます":3,"知ります|しります":3,"作ります|つくります":4,"もしもし|もしもし":1,"外|そと":1,"使います|つかいます":4,"開けます|あけます":3,"閉めます|しめます":3,"窓|まど":1,"吸います|すいます":3,"たばこ|たばこ":0,"ペン|ペン":1,"駄目|だめ":2,"始めます|はじめます":4,"終わります|おわります":4,"続けます|つづけます":4,"頑張ります|がんばります":5,"これから|これから":4,"また|また":0,"中国|ちゅうごく":0,"あなた|あなた":2,"男の人|おとこのひと":6,"女の人|おんなのひと":6,"子供|こども":0,"父|ちち":1,"母|はは":1,"兄|あに":1,"姉|あね":0,"弟|おとうと":4,"妹|いもうと":4,"晩|ばん":0,"今年|ことし":0,"来年|らいねん":0,"去年|きょねん":1,"今月|こんげつ":0,"来月|らいげつ":1,"先月|せんげつ":1,"今週|こんしゅう":0,"毎週|まいしゅう":0,"春|はる":1,"夏|なつ":2,"秋|あき":1,"冬|ふゆ":2,"誕生日|たんじょうび":3,"銀行|ぎんこう":0,"郵便局|ゆうびんきょく":3,"家|いえ":2,"国|くに":0,"道|みち":0,"海|うみ":1,"山|やま":2,"川|かわ":2,"空|そら":1,"外国|がいこく":0,"喫茶店|きっさてん":3,"食堂|しょくどう":0,"交番|こうばん":0,"朝ご飯|あさごはん":3,"晩ご飯|ばんごはん":3,"野菜|やさい":0,"果物|くだもの":2,"卵|たまご":2,"牛乳|ぎゅうにゅう":0,"お酒|おさけ":0,"お菓子|おかし":2,"辞書|じしょ":1,"ノート|ノート":1,"鉛筆|えんぴつ":0,"眼鏡|めがね":1,"電話|でんわ":0,"テレビ|テレビ":1,"椅子|いす":0,"ドア|ドア":1,"服|ふく":2,"帽子|ぼうし":0,"切符|きっぷ":0,"地下鉄|ちかてつ":0,"飛行機|ひこうき":2,"頭|あたま":3,"目|め":1,"耳|みみ":2,"口|くち":0,"手|て":1,"足|あし":2,"お腹|おなか":0,"雪|ゆき":2,"風|かぜ":0,"行く|いく":0,"来る|くる":1,"帰る|かえる":1,"食べる|たべる":2,"飲む|のむ":1,"見る|みる":1,"聞く|きく":0,"読む|よむ":1,"書く|かく":1,"話す|はなす":2,"買う|かう":0,"会う|あう":1,"待つ|まつ":1,"起きる|おきる":2,"寝る|ねる":0,"歩く|あるく":2,"走る|はしる":2,"泳ぐ|およぐ":2,"立つ|たつ":1,"座る|すわる":0,"入る|はいる":1,"出る|でる":1,"開ける|あける":0,"閉める|しめる":2,"教える|おしえる":0,"習う|ならう":2,"勉強する|べんきょうする":0,"働く|はたらく":0,"休む|やすむ":2,"使う|つかう":0,"作る|つくる":2,"持つ|もつ":1,"取る|とる":1,"撮る|とる":1,"洗う|あらう":0,"着る|きる":0,"脱ぐ|ぬぐ":1,"乗る|のる":0,"降りる|おりる":2,"住む|すむ":1,"知る|しる":0,"分かる|わかる":2,"忘れる|わすれる":0,"覚える|おぼえる":3,"する|する":0,"低い|ひくい":2,"長い|ながい":2,"短い|みじかい":3,"熱い|あつい":2,"冷たい|つめたい":0,"易しい|やさしい":0,"面白い|おもしろい":4,"早い|はやい":2,"速い|はやい":2,"遅い|おそい":2,"近い|ちかい":2,"遠い|とおい":0,"多い|おおい":1,"少ない|すくない":3,"いい|いい":1,"悪い|わるい":2,"白い|しろい":2,"黒い|くろい":2,"赤い|あかい":0,"青い|あおい":2,"賑やか|にぎやか":2,"大丈夫|だいじょうぶ":3,"少し|すこし":2,"たくさん|たくさん":3,"もう|もう":1,"まだ|まだ":1,"いつも|いつも":1,"時々|ときどき":0,"よく|よく":1,"何|なに":1,"いつ|いつ":1,"どれ|どれ":1,"どの|どの":1};
 /* ---------- 工具 ---------- */
 const KEY = "kakueki.v1";
 const INTERVALS = [0, 1, 3, 7, 14, 30, 60];
@@ -2543,7 +2575,7 @@ function exampleFor(w, l) {
 function wordLearn(w, l) {
   const bs = beats(w[1].replace(/[〜\s]/g, "")), ex = exampleFor(w, l), same = w[0].replace("〜", "") === w[2];
   return `<div class="learn"><div class="eyebrow">怎么读</div>
-    <div class="beats" lang="ja">${bs.map((b, i) => `<span>${b}<i>${moraRo(bs, i)}</i></span>`).join("")}</div>
+    ${pitchChart(w)}
     <p>一共 ${bs.length} 拍，每一拍一样长。点喇叭听，跟着读出声。</p>
     ${readTips(w[1]).map(t => `<p class="li">${t}</p>`).join("")}
     ${same ? `<div class="eyebrow">怎么记</div><p>汉字和中文一样，意思也一样，只要记住读音。</p>` : ""}
@@ -2562,7 +2594,7 @@ function stepBody(st) {
     return { html: `<div class="arrive"><span class="code"><span>NH</span><b>${code(l.id)}</b></span><div class="big mid" lang="ja">${l.st}</div><div>${esc(l.zh)}</div><p>${esc(l.intro)}</p></div>`, foot: btn("进站") };
   }
   if (st.k === "word") {
-    const reading = st.w[0].replace("〜", "") === st.w[1] ? "" : `<div class="read" lang="ja">${esc(st.w[1])}</div>`;
+    const reading = st.w[0].replace("〜", "") === st.w[1] ? "" : `<div class="read" lang="ja">${pitchText(st.w)}</div>`;
     return { html: `<div class="tag-l">新词 ${st.i + 1} / ${st.n}</div><div class="card"><div class="big" lang="ja">${esc(st.w[0])}</div>${reading}<div class="roma">${romaji(st.w[1])}</div><div class="mean">${esc(st.w[2])}</div><div class="card-btns">${soundBtn(st.w[1])}<button class="chip" data-a="slow" data-v="${esc(st.w[1])}">慢速听</button></div></div>${wordLearn(st.w, st.l)}${aiBlock(st, "还是不会？请导师讲这个词")}`, foot: btn("读熟了，下一个"), auto: st.w[1] };
   }
   if (st.k === "rule") {
@@ -2723,7 +2755,7 @@ function wordRows() {
   if (!rows.length) return `<p class="empty">没有符合条件的单词。</p>`;
   return rows.map(k => {
     const { w } = WORD[k], b = S.srs[k].b;
-    return `<div class="w"><div><b lang="ja">${wordHtml(w)}</b><small>${esc(w[2])}</small></div><div class="bars" aria-label="记忆程度 ${b} / 6">${[1, 2, 3, 4, 5, 6].map(i => `<i class="${i <= b ? "on" : ""}"></i>`).join("")}</div>${soundBtn(w[1])}</div>`;
+    return `<div class="w"><div><b lang="ja">${wordHtml(w)}</b><small><span lang="ja">${pitchText(w)}</span>　${esc(w[2])}</small></div><div class="bars" aria-label="记忆程度 ${b} / 6">${[1, 2, 3, 4, 5, 6].map(i => `<i class="${i <= b ? "on" : ""}"></i>`).join("")}</div>${soundBtn(w[1])}</div>`;
   }).join("");
 }
 function bookView() {
@@ -2742,6 +2774,7 @@ function bookView() {
       <div class="set"><div>每日目标<small>只影响目标进度，学一次就算打卡</small></div><div class="goal-pick">${DAY_GOALS.map(([n, t, s]) => `<button class="chip" data-a="setGoal" data-v="${n}" aria-pressed="${S.goal === n}" title="${s}">${t} ${n}</button>`).join("")}</div></div>
       <div class="set"><div>显示振假名<small>汉字上方标注读音</small></div><button class="switch" role="switch" aria-checked="${S.set.furi}" aria-label="显示振假名" data-a="setFuri"></button></div>
       <div class="set set-col"><div>罗马音注音<small>像拼音一样标在假名下面，熟了自动消失</small></div><div class="seg" role="group" aria-label="罗马音注音">${[["smart", "只标不熟的"], ["all", "全部标注"], ["off", "不标注"]].map(([k, t]) => `<button data-a="roSet" data-v="${k}" aria-pressed="${S.set.ro === k}">${t}</button>`).join("")}</div></div>
+      <div class="set"><div>声调线<small>红线表示读高，竖线表示从这里降下来</small></div><button class="switch" role="switch" aria-checked="${pitchOn()}" aria-label="声调线" data-a="setPitch"></button></div>
       <div class="set"><div>音效和震动<small>答题、翻卡和升级时的提示，震动只在部分安卓手机上有</small></div><button class="switch" role="switch" aria-checked="${S.set.sfx}" aria-label="音效和震动" data-a="setSfx"></button></div>
       <div class="set"><div>慢速朗读<small>听不清时打开</small></div><button class="switch" role="switch" aria-checked="${S.set.slow}" aria-label="慢速朗读" data-a="setSlow"></button></div>
       <div class="set"><div>进度保存<small>${syncText}</small></div></div>
@@ -2897,6 +2930,60 @@ function kanjiHtml(base, rd) {
   if (S.set.ro === "smart" && !beats(rd).some(moraWeak)) return html;
   return `<span class="u"><span class="g">${html}</span><i>${romaji(rd)}</i></span>`;
 }
+/* ---------- 声调线 ----------
+   东京音的高低发生在拍和拍之间。ACCENT 的数字是声调核的位置，这一拍之后降下来：
+   0 平板，1 头高，等于拍数时尾高，其余中高。数据来自 Kanjium（CC BY-SA 4.0），生成方法见 gen_accent.js */
+const pitchOn = () => S.set.pitch !== false;
+const accentOf = w => ACCENT[`${w[0]}|${w[1]}`];
+/* 每一拍是高是低，多算一拍表示后面接的助词 */
+function pitchLevels(n, a) {
+  return [...Array(n + 1)].map((_, i) => {
+    const at = i + 1;
+    if (a === 1) return at === 1;
+    if (a === 0) return at > 1;
+    return at > 1 && at <= a;
+  });
+}
+const pitchType = (n, a) => a === 0 ? "平板型" : a === 1 ? "头高型" : a === n ? "尾高型" : "中高型";
+const pitchTip = (n, a, next) => a === 0 ? `第一拍低，后面一直高${next ? `，接${next}也不降` : ""}。`
+  : a === 1 ? "第一拍高，后面都低。"
+  : a === n ? `第一拍低，后面一直高${next ? `，到${next}才降下来` : ""}。`
+  : `第一拍低，升上去，第 ${a} 拍之后降下来。`;
+const N5POS = Object.fromEntries(N5SET.flatMap(s => s.w.map(w => [`${w[0]}|${w[1]}`, w[3]])));
+const NA_WORDS = new Set(["簡単", "大変", "駄目"]);
+const NO_NEXT = new Set(["こんにちは", "こんばんは", "さようなら", "おやすみなさい", "はい", "いいえ", "もしもし", "でも", "また", "これから", "ちょっと", "ゆっくり", "あまり", "一緒に", "何", "何も", "どこへも", "もう一度", "歩いて", "この", "その", "あの", "欲しい", "いくつ"]);
+/* 词后面接的音：名词接助词，な形容词接な。动词和寒暄语后面不接这类音，线就画到词尾为止 */
+function pitchNext(w) {
+  const pos = N5POS[`${w[0]}|${w[1]}`];
+  if (pos === "な形" || NA_WORDS.has(w[0])) return ["な", "词尾"];
+  if (pos) return /名词|代词/.test(pos) ? ["が", "助词"] : null;
+  return NO_NEXT.has(w[0]) || /(ます|ません|ました|です|ですね)$/.test(w[1]) ? null : ["が", "助词"];
+}
+
+/* 紧凑写法：高的拍上面画线，下降的地方画一条竖线，和日语词典的标法一样 */
+function pitchText(w) {
+  const a = accentOf(w), text = w[1].replace(/〜/g, "");
+  if (a === undefined || !pitchOn()) return esc(text);
+  const bs = beats(text), h = pitchLevels(bs.length, a);
+  return `<span class="pt" role="img" aria-label="${esc(text)}，${pitchType(bs.length, a)}">${bs.map((b, i) => {
+    const up = i > 0 && h[i] && !h[i - 1], down = h[i] && !h[i + 1];
+    return `<span class="${h[i] ? "hi" : ""}${up ? " up" : ""}${down ? " dn" : ""}">${b}</span>`;
+  }).join("")}</span>`;
+}
+/* 词卡上的阶梯线：每拍一个点，高的红，低的蓝，最后的空心点是后面接的音 */
+function pitchChart(w) {
+  const a = accentOf(w), bs = beats(w[1].replace(/[〜\s]/g, "")), n = bs.length, next = pitchNext(w), cells = bs.map((b, i) => `<span>${b}<i>${moraRo(bs, i)}</i></span>`).join("");
+  if (a === undefined || !pitchOn()) return `<div class="beats" lang="ja">${cells}</div>`;
+  const h = pitchLevels(n, a), m = n + (next ? 1 : 0), W = 48, X = i => (i + .5) * W, Y = i => h[i] ? 10 : 34, tip = pitchTip(n, a, next && (next[0] === "な" ? "な" : "助词"));
+  const line = [...Array(n)].map((_, i) => `${X(i)},${Y(i)}`).join(" ");
+  const dots = [...Array(n)].map((_, i) => `<circle cx="${X(i)}" cy="${Y(i)}" r="5" class="${h[i] ? "p-h" : "p-l"}"/>`).join("");
+  return `<div class="pitch" style="--n:${m}"><svg viewBox="0 0 ${m * W} 44" role="img" aria-label="${pitchType(n, a)}：${tip}"><polyline points="${line}"/>${next ? `<line class="p-next" x1="${X(n - 1)}" y1="${Y(n - 1)}" x2="${X(n)}" y2="${Y(n)}"/>` : ""}${dots}${next ? `<circle cx="${X(n)}" cy="${Y(n)}" r="5" class="p-o"/>` : ""}</svg>
+    <div class="beats" lang="ja">${cells}${next ? `<span class="p-part">${next[0]}<i>${next[1]}</i></span>` : ""}</div></div>
+    <p class="p-tip"><b>${pitchType(n, a)}</b>　${tip}</p>`;
+}
+Object.assign(ACT, {
+  setPitch() { S.set.pitch = !pitchOn(); save(); render(); },
+});
 /* ---------- 音效 ----------
    全部用 Web Audio 现场合成，不用音频文件，所以离线也能响。
    SFX 里每个函数只搭建声音，sfx 负责播放；测试时可以把 SFX 接到离线上下文里检查波形。
@@ -3449,6 +3536,11 @@ function kHowView() {
     ${sec("你的粤语能帮什么", `<p>入声让你更容易抓住促音的停顿，粤语长短元音（三 saam、心 sam）能帮你听出长音，粤语的平调（第 1 声和第 6 声）也有助于感受日语的高低。</p><p>更大的好处在后面学汉字：粤语保留的韵尾和日语音读有规律对应，看到一个汉字，经常能猜出读音。这些是趋势，不是公式，例外不少。</p>
       ${KYUE.map(y => `<h3>${esc(y.t)}</h3><div class="kyue">${y.ex.map(e => `<span><b>${e[0]}</b><small>${e[1]}</small><i class="kf" lang="ja">${e[2]}</i></span>`).join("")}</div>${y.note ? `<p class="tiny">${esc(y.note)}</p>` : ""}`).join("")}`)}
     ${sec("你的英语能帮什么", `<p>英语的 b、d、g、z 是真正的浊音，读 ば、だ、が、ざ 时借这个感觉。ら行 可以借美音 water 中间的 t。</p><p>片假名大多是外来语，掌握下面这些规律，很多词看一眼就能猜出来。</p><table class="ktable"><tbody>${KENG.map(e => `<tr><th>${esc(e[0])}</th><td>${esc(e[1])}<small>${esc(e[2])}</small></td></tr>`).join("")}</tbody></table>`)}
+    ${sec("声调线怎么看", `<p>日语每个词都有固定的高低，读错了别人也能听懂，但会不自然，有时还会变成另一个词：雨 和 飴 都读 あめ，高低不同。</p>
+      <p>高低发生在拍和拍之间，不在一拍里面升降。词卡上的红点读高，蓝点读低，最后的空心点是后面接的助词或な，动词和寒暄语后面没有这个点。词表里红线表示读高，竖线表示从这里降下来。</p>
+      <div class="p-demo">${[["学校", "がっこう"], ["雨", "あめ"], ["先生", "せんせい"], ["山", "やま"]].map(w => pitchChart(w)).join("")}</div>
+      ${crossList([["普", "普通话的四声在一个字里面升降，日语不是。读的时候每一拍都保持平的，只在拍和拍之间换高低。"], ["粤", "粤语的第 1 声（高平）和第 6 声（低平）很好用：高的拍读成第 1 声的高度，低的拍读成第 6 声的高度。"], ["英", "英语重音靠力度和长度，日语只靠音高。高的拍不要读得更重更长，每拍长度一样。"]])}
+      <p class="tiny">声调数据来自 Kanjium（CC BY-SA 4.0），是东京音的标准读法，一个词有时不止一种读法，这里选和录音一致的那种。</p>`)}
     ${sec("方法从哪来", `<p>这里综合了 Tofugu 的假名学习指南、MOJiKana 等应用的功能，以及中文网友在知乎、小红书上分享的经验：按行学、助记开路、听写和默写检验、错题单独记、每天少量坚持。「3 天速成」这类说法没有可靠依据，这里没有采用。助记和发音对照由我原创编写，三语对应是帮助记忆的近似说法，最终以朗读为准。</p>`)}
   </div>`;
 }
@@ -3695,7 +3787,7 @@ function grade3(key, g) {
 const POS_NOTE = { 动词1: "五段动词", 动词2: "一段动词", 动词3: "不规则动词", い形: "い形容词", な形: "な形容词" };
 function cardBack(st) {
   const w = n5Of(st.key), ex = w[4] ? [w[4], w[5]] : WEX[w[0]], tips = st.fresh ? readTips(w[1]) : [];
-  return `<div class="read" lang="ja">${esc(w[1])}</div><div class="roma">${romaji(w[1])}</div><div class="mean">${esc(w[2])}</div>
+  return `<div class="read" lang="ja">${pitchText(w)}</div><div class="roma">${romaji(w[1])}</div><div class="mean">${esc(w[2])}</div>
     ${w[3] ? `<div class="fc-pos">${esc(POS_NOTE[w[3]] || w[3])}${w[6] ? ` · ます形 <span lang="ja">${w[6]}</span>` : ""}</div>` : ""}
     <div class="card-btns center">${soundBtn(w[1])}<button class="chip" data-a="slow" data-v="${esc(w[1])}">慢速听</button></div>
     ${tips.map(t => `<p class="tiny">${t}</p>`).join("")}
@@ -3803,7 +3895,7 @@ function wordOfDay() {
 }
 function homeWord() {
   const w = wordOfDay();
-  return `<section class="panel wod"><div class="eyebrow">今日一词</div><div class="wod-row"><div><b lang="ja">${wordHtml(w, true)}</b><small>${esc(w[2])}</small></div>${soundBtn(w[1])}</div>${exRow([w[4], w[5]])}</section>`;
+  return `<section class="panel wod"><div class="eyebrow">今日一词</div><div class="wod-row"><div><b lang="ja">${wordHtml(w, true)}</b><small><span lang="ja">${pitchText(w)}</span>　${esc(w[2])}</small></div>${soundBtn(w[1])}</div>${exRow([w[4], w[5]])}</section>`;
 }
 function homeEntries() {
   const h = kCount("h"), kd = kDue().length, m = mastery(), g = gNext(), n = Object.keys(S.gram).length;
@@ -3842,7 +3934,7 @@ function n5View() {
     const seen = s.w.filter(w => S.srs[N5K[N5W.findIndex(x => x[0] === w[0] && x[1] === w[1])]]).length;
     return `<details class="g"><summary>${esc(s.t)}<small>${seen} / ${s.w.length}</small></summary><div class="wlist">${s.w.map(w => {
       const r = S.srs[N5K[N5W.findIndex(x => x[0] === w[0] && x[1] === w[1])]], b = r?.b || 0;
-      return `<div class="w"><div><b lang="ja">${wordHtml(w)}</b><small>${esc(w[2])} · ${esc(POS_NOTE[w[3]] || w[3])}</small></div><div class="bars" aria-label="记忆程度 ${b} / 6">${[1, 2, 3, 4, 5, 6].map(i => `<i class="${i <= b ? "on" : ""}"></i>`).join("")}</div>${soundBtn(w[1])}</div>`;
+      return `<div class="w"><div><b lang="ja">${wordHtml(w)}</b><small><span lang="ja">${pitchText(w)}</span>　${esc(w[2])} · ${esc(POS_NOTE[w[3]] || w[3])}</small></div><div class="bars" aria-label="记忆程度 ${b} / 6">${[1, 2, 3, 4, 5, 6].map(i => `<i class="${i <= b ? "on" : ""}"></i>`).join("")}</div>${soundBtn(w[1])}</div>`;
     }).join("")}</div></details>`;
   }).join("");
   return `<div class="grid home n5v"><div class="stack">${sets}</div><aside class="grid"><section class="panel"><div class="eyebrow">N5 词汇掌握</div>${masteryBar()}<button class="btn" data-a="ncards" style="margin-top:12px">开始今天的 ${buildCards().length} 张词卡</button></section><section class="panel"><div class="eyebrow">顽固词</div>${stubbornList(5)}</section></aside></div>`;
@@ -3997,8 +4089,8 @@ function noteWord(key, n) {
   if (!hit) return "";
   const { w } = hit, mine = S.wnote[key]?.t || "", on = n.tick[key], open = NB.edit === key;
   return `<div class="nw${on ? " ok" : ""}">${tick(key, on, w[0])}
-    <div class="nw-m"><b lang="ja">${noRo(() => wordHtml(w, true))}</b><span class="pen">${romaji(w[1])}</span></div>
-    <div class="nw-z">${esc(w[2])}</div>
+    <div class="nw-m"><b lang="ja">${KANJI.test(w[0]) ? esc(w[0]) : pitchText(w)}</b>${KANJI.test(w[0]) ? `<span class="nw-r" lang="ja">${pitchText(w)}</span>` : ""}</div>
+    <div class="nw-z"><span class="pen">${romaji(w[1])}</span>　${esc(w[2])}</div>
     <div class="nw-a">${soundBtn(w[1])}<button class="pencil${mine ? " has" : ""}" data-a="nedit" data-v="${esc(key)}" aria-label="给 ${esc(w[0])} 写记法">${PENCIL}</button></div>
     ${open ? `<input class="nw-in" id="w-note" data-k="${esc(key)}" value="${esc(mine)}" placeholder="写下这个词的记法" aria-label="${esc(w[0])} 的记法">` : mine ? `<p class="nw-note pen">${esc(mine)}</p>` : ""}</div>`;
 }
@@ -4039,7 +4131,7 @@ function printHtml(d) {
   const n = S.notes[d], l = n.list, dt = dayOf(d), g = N5G[l.g - 1];
   const cell = (ch = "", cls = "") => `<span class="pc ${cls}">${ch}</span>`;
   const kana = l.k.map(ch => `<div class="p-row"><span class="p-ro">${soundOf(KI[ch])}</span>${cell(ch, "m")}${cell(ch, "t")}${cell(ch, "t")}${cell(ch, "t")}${Array(8).fill(cell()).join("")}</div>`).join("");
-  const words = l.w.filter(k => WORD[k]).map(k => { const { w } = WORD[k]; return `<tr><td class="p-w" lang="ja">${esc(w[0])}</td><td class="p-r"><span lang="ja">${esc(w[1])}</span> <small>${romaji(w[1])}</small></td><td class="p-z">${esc(w[2])}</td><td class="p-line"></td></tr>`; }).join("");
+  const words = l.w.filter(k => WORD[k]).map(k => { const { w } = WORD[k]; return `<tr><td class="p-w" lang="ja">${esc(w[0])}</td><td class="p-r"><span lang="ja">${pitchText(w)}</span> <small>${romaji(w[1])}</small></td><td class="p-z">${esc(w[2])}</td><td class="p-line"></td></tr>`; }).join("");
   return `<header class="p-head"><h1>各駅停車 手写单</h1><div class="p-no">No. ${Object.keys(S.notes).filter(k => k <= d).length}　Date ${dt.getFullYear()} . ${dt.getMonth() + 1} . ${pad(dt.getDate())}（<span lang="ja">${WEEK_JA[dt.getDay()]}</span>）</div></header>
     ${kana ? `<section><h2>假名：看范字，描三遍，再默写</h2>${kana}</section>` : ""}
     <section><h2>单词：边写边读出声</h2><table class="p-t"><tbody>${words}</tbody></table></section>
