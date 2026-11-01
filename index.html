@@ -918,6 +918,49 @@ svg .kbox { fill: var(--plate); }
 .hear-miss { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; width: 100%; padding: 8px 12px; text-align: left; background: var(--plate); border: 1.5px solid var(--rule); border-radius: var(--r); }
 .hear-miss .hw { flex: 1 1 5.5em; }
 .hear-miss .pitch { flex: 0 1 150px; }
+/* 各站小故事：列表是发车案内屏，每集开头是一张车票，妈妈的信写在校园笔记本上 */
+.st-list { display: grid; gap: 12px; }
+.st-head b { font-family: var(--ja); font-size: 16px; font-weight: 700; letter-spacing: .08em; }
+.st-next { justify-items: start; }
+.st-next b { font-family: var(--ja); font-size: 17px; font-weight: 700; line-height: 1.5; text-align: left; text-wrap: pretty; }
+.st-kick { font-size: 13px; letter-spacing: .08em; opacity: .8; }
+.st-wait { padding: 12px 14px; font-size: 14px; color: var(--ink-2); background: var(--plate); border: 1px solid var(--rule); border-radius: var(--r); }
+.st-wait b, .st-lock b { margin-inline: 6px 2px; font-family: var(--ja); font-weight: 700; color: var(--ink); }
+.st-board .b-k { font-family: var(--num); font-size: 14px; font-variant-numeric: tabular-nums; }
+.st-board li:not(.on):not(.ok) .b-t { color: var(--board-dim); }
+.st-board li:not(.on):not(.ok) .b-k { background: var(--board-dim); }
+.st-board .b-s { font-family: var(--zh); font-size: 13px; }
+.st-board li.on .b-t { color: var(--led); font-weight: 700; }
+
+.st-ticket { display: grid; gap: 2px; padding: 12px 16px; color: var(--ticket-ink); background-color: var(--ticket); background-image: radial-gradient(circle at 1px 1px, var(--ticket-dot) 1px, transparent 1.3px); background-size: 7px 7px; clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%, 0 14px); }
+.st-ticket span { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 13px; letter-spacing: .06em; }
+.st-ticket em { font-style: normal; font-family: var(--ja); font-weight: 700; }
+.st-ticket h2 { font-size: 21px; font-weight: 700; line-height: 1.4; text-wrap: pretty; }
+.st-lead { font-size: 15px; line-height: 1.75; color: var(--ink-2); text-wrap: pretty; }
+.st-talk { gap: 10px; }
+.st-bub { display: block; }
+.st-bub > span { font-family: var(--zh); }
+.st-bub[data-who="田中"] { border-left: 3px solid var(--u1); }
+.st-bub[data-who="山田"] { border-left: 3px solid var(--u3); }
+.st-bub[data-who="店員"] { border-left: 3px solid var(--u4); }
+.st-bub[data-who="先生"] { border-left: 3px solid var(--u2); }
+.st-bub .st-zh { display: block; line-height: 1.5; }
+.st-n { display: block; margin-top: 2px; font-style: normal; font-size: 13px; color: var(--pen); }
+/* 隐藏中文时留一条横线占位，点一下单独看这一句 */
+.st-nozh .st-zh { position: relative; color: transparent; min-height: 21px; }
+.st-nozh .st-zh::after { content: ""; position: absolute; left: 0; top: 50%; width: 72px; max-width: 100%; border-top: 2px dotted var(--ink-3); }
+.st-nozh .st-zh.peek { color: var(--ink-2); }
+.st-nozh .st-zh.peek::after { display: none; }
+/* 妈妈的信 */
+.st-letter { justify-self: stretch; max-width: 100%; padding: 8px 12px 10px 22px; color: var(--nb-ink); background-color: var(--nb); background-image: linear-gradient(90deg, transparent 13px, var(--nb-edge) 13px, var(--nb-edge) 14px, transparent 14px); border: 1px solid var(--nb-rule); border-radius: 0; }
+.st-letter b { font-family: var(--kf); font-weight: 600; }
+.st-letter small, .st-letter > span { color: var(--ink-3); }
+.st-tail { display: grid; gap: 6px; padding: 12px 14px; color: var(--board-ink); background: var(--board); border-radius: var(--r); }
+.st-tail span { font-family: var(--zh); font-size: 12px; font-weight: 700; letter-spacing: .24em; color: var(--led); }
+.st-tail p { font-size: 15px; line-height: 1.75; text-wrap: pretty; }
+.st-foot { display: grid; gap: 8px; max-width: 620px; margin: 0 auto; }
+.st-lock { font-size: 14px; color: var(--ink-2); text-align: center; }
+.entry.wide { grid-column: 1 / -1; }
 </style>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="ink"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.1 1.550"/><feComposite in="SourceGraphic" operator="in"/></filter></svg>
 <div id="app"></div>
@@ -2326,7 +2369,7 @@ function autoRuby(s) {
 }
 
 /* ---------- 进度 ---------- */
-const blank = () => ({ v: 1, epoch: 0, t: 0, xp: 0, days: {}, done: {}, srs: {}, my: {}, plan: null, kana: {}, kdone: {}, kplace: {}, kbest: {}, gram: {}, ba: {}, fz: { n: 1, at: 0 }, name: "", goal: 40, kmark: {}, knote: {}, wnote: {}, notes: {}, set: { furi: true, slow: false, ro: "smart", sfx: true } });
+const blank = () => ({ v: 1, epoch: 0, t: 0, xp: 0, days: {}, done: {}, srs: {}, my: {}, plan: null, kana: {}, kdone: {}, kplace: {}, kbest: {}, gram: {}, ba: {}, fz: { n: 1, at: 0 }, name: "", goal: 40, kmark: {}, knote: {}, wnote: {}, notes: {}, story: {}, set: { furi: true, slow: false, ro: "smart", sfx: true } });
 function load() {
   try { const r = localStorage.getItem(KEY); if (r) { const o = JSON.parse(r); return { ...blank(), ...o, set: { ...blank().set, ...o.set } }; } } catch {}
   return blank();
@@ -2346,7 +2389,7 @@ function merge(a, b) {
   m.kplace = { ...(b.kplace || {}), ...(a.kplace || {}) };
   m.ba = { ...(b.ba || {}), ...(a.ba || {}) };
   m.gram = { ...(a.gram || {}) };
-  for (const f of ["kmark", "knote", "wnote", "notes"]) {
+  for (const f of ["kmark", "knote", "wnote", "notes", "story"]) {
     m[f] = { ...(a[f] || {}) };
     for (const [k, v] of Object.entries(b[f] || {})) if (!m[f][k] || (v.at || 0) > (m[f][k].at || 0)) m[f][k] = v;
   }
@@ -2871,7 +2914,7 @@ function homeView() {
     </section>
     ${homeTasks(next, minutes)}
     ${PWA ? "" : `<button class="btn ghost" data-a="tutor" data-v="talk">和导师说几句日语</button>`}</div>
-    <aside class="grid">${homeMemo()}${homeCheck()}${homeWord()}${homeEntries()}</aside></div>`;
+    <aside class="grid">${homeMemo()}${homeCheck()}${homeWord()}${storyCard()}${homeEntries()}</aside></div>`;
 }
 function lineView() {
   const next = nextLesson();
@@ -4916,7 +4959,8 @@ function homeEntries() {
     ${one("あ", "五十音特训", kd ? `今天 ${kd} 个要复习` : `平假名 ${h.seen}/${h.all}`, "tab", "kana")}
     ${one("語", "N5 词汇突破", due ? `今天 ${due} 个到期` : `已掌握 ${m.good}/${N5W.length}`, "ncards")}
     ${one("文", "语法大闯关", g ? `第 ${g.id} 关：${esc(g.t)}` : `${n} 关全部通过`, "wgo", "grammar")}
-    ${one("高", "听高低", hearSub(), "hear")}</section>`;
+    ${one("高", "听高低", hearSub(), "hear")}
+    ${one("話", "各站小故事", storySub(), "story").replace('class="entry"', 'class="entry wide"')}</section>`;
 }
 function homeTasks(next, minutes) {
   const t = today(), d = S.days[t], due = dueKeys().length, kd = kDue().length, g = gNext(), cards = d?.cards || 0;
@@ -5412,6 +5456,553 @@ function hearMark(st, ok, clip) {
 /* 成绩页已经存好了，点叉直接离开，不再问 */
 const hearAskLeave = ACT.askLeave;
 ACT.askLeave = () => ses?.hearOver ? leave() : hearAskLeave();
+/* 各站小故事。每站一集，到站才解锁。写法约定：
+   lead          开场中文旁白，日语词汇不够讲的部分放这里
+   lines         [角色, 台词, 中文, 附加]，台词用 漢字{かな} 注音；附加可写 { n: "超纲词注释", say: "送给语音引擎的读法" }
+   tail          结尾中文旁白，留悬念
+   词汇只用到这一站为止学过的内容，由 src/story_check.js 核对。角色“手紙”是王在读信，用王的声音。
+   同一句话只能有一个声音，录音按句子文字存放。 */
+const STORY_EP = [
+{ id: 1, title: "一封不能拆的信",
+  lead: "王要去东京读大学了。出发那天，妈妈塞给她两样东西：一张旧照片，一封贴着日本邮票、封得好好的信。妈妈说：东京有我一个老朋友，找到她，把信交给她。找到之前，不要拆。",
+  lines: [
+    ["王", "今日{きょう}、東京{とうきょう}へ行{い}きます。", "今天，我去东京。"],
+    ["王", "私{わたし}は王{おう}です。学生{がくせい}です。", "我姓王，是学生。"],
+    ["王", "お母{かあ}さん、写真{しゃしん}、切手{きって}…。", "妈妈，照片，邮票……"],
+    ["王", "日本{にほん}！東京{とうきょう}！", "日本！东京！"],
+  ],
+  tail: "飞机落地了。照片背面有一行潦草的平假名，王现在还读不太懂。" },
+
+{ id: 2, title: "站台上的相撞",
+  lead: "开学前一天早上，王第一次挤东京的电车。下车的时候，她撞上一个穿西装的男人，包里的东西撒了一地。男人蹲下来，帮她一样一样捡起来。",
+  lines: [
+    ["王", "すみません！すみません！", "对不起！对不起！"],
+    ["田中", "おはようございます。すみません。", "早上好。不好意思。"],
+    ["王", "おはようございます。ありがとうございます！", "早上好。谢谢您！"],
+    ["田中", "さようなら。", "再见。"],
+    ["王", "さようなら。…写真{しゃしん}？写真{しゃしん}！", "再见。……照片？我的照片！"],
+  ],
+  tail: "车门关上了。王翻遍了包，妈妈的照片不见了。" },
+
+{ id: 3, title: "他在等她",
+  lead: "第二天早上，同一个时间，同一个站台。那个穿西装的男人站在柱子旁边，手里拿着一张旧照片。",
+  lines: [
+    ["田中", "おはようございます。写真{しゃしん}です。", "早上好。这是照片。"],
+    ["王", "写真{しゃしん}！ありがとうございます！", "照片！谢谢您！"],
+    ["田中", "はじめまして。田中{たなか}です。私{わたし}は会社員{かいしゃいん}です。", "初次见面。我叫田中。我是公司职员。"],
+    ["王", "はじめまして。王{おう}です。私{わたし}は中国人{ちゅうごくじん}です。学生{がくせい}です。", "初次见面。我姓王。我是中国人，是学生。"],
+    ["田中", "王{おう}さん、どうぞよろしくお願{ねが}いします。", "王同学，请多关照。"],
+    ["王", "こちらこそ、よろしくお願{ねが}いします。", "我才要请您多关照。"],
+  ],
+  tail: "田中没有马上走。他又看了一眼照片，表情有点奇怪。" },
+
+{ id: 4, title: "照片上的另一个人",
+  lead: "照片上有两个年轻女人，站在车站的大钟下面。左边的是王的妈妈，右边的穿着一件白大褂。王告诉田中：妈妈三十年前在东京留学，后来和这位朋友断了联系。",
+  lines: [
+    ["田中", "お母{かあ}さんは日本人{にほんじん}ですか。", "您母亲是日本人吗？"],
+    ["王", "いいえ、日本人{にほんじん}じゃありません。中国人{ちゅうごくじん}です。", "不，不是日本人。是中国人。"],
+    ["田中", "そうですか。…誰{だれ}ですか。", "这样啊。……这一位是谁？"],
+    ["王", "はなさんです。日本人{にほんじん}です。", "是はな女士。她是日本人。"],
+    ["田中", "「さくらびょういん」…。病院{びょういん}ですか。", "“さくら医院”……是医院吗？"],
+    ["王", "はい、そうです。はなさんは医者{いしゃ}です。", "对，是的。はな女士是医生。"],
+  ],
+  tail: "两人一起读了照片背面那行平假名：さくらびょういん。穿白大褂，在医院，王很确定，她要找的是一位医生。东京再大，找一家医院能有多难？" },
+
+{ id: 5, title: "さくら大学的同学",
+  lead: "开学了。田中有个朋友也在さくら大学，可以帮王一起找。这个朋友的发型总是特别好看。",
+  lines: [
+    ["田中", "王{おう}さん、こちらは私{わたし}の友達{ともだち}の山田{やまだ}さんです。", "王同学，这位是我的朋友山田。"],
+    ["山田", "はじめまして。山田{やまだ}です。さくら大学{だいがく}の学生{がくせい}です。", "初次见面。我是山田，さくら大学的学生。"],
+    ["王", "はじめまして。王{おう}です。私{わたし}もさくら大学{だいがく}の学生{がくせい}です。", "初次见面。我姓王。我也是さくら大学的学生。"],
+    ["山田", "王{おう}さんの家族{かぞく}の写真{しゃしん}ですか。", "这是你家人的照片吗？"],
+    ["王", "はい。私{わたし}のお母{かあ}さんです。お母{かあ}さんの友達{ともだち}の名前{なまえ}は、はなさんです。", "对，这是我妈妈。妈妈的朋友叫はな。"],
+    ["山田", "はなさん…。さくら大学{だいがく}の病院{びょういん}の医者{いしゃ}ですか。", "はな……是さくら大学附属医院的医生吗？"],
+  ],
+  tail: "没人知道答案。山田把照片翻过来，发现角落里还有一串褪了色的数字。" },
+
+{ id: 6, title: "三十年前的电话号码",
+  lead: "那串数字是一个东京的电话号码。三十年前的号码，现在还打得通吗？田中拿出了手机。",
+  lines: [
+    ["田中", "王{おう}さん、電話番号{でんわばんごう}は何番{なんばん}ですか。", "王同学，电话号码是多少？"],
+    ["王", "ゼロさんの、さんごいちはちの、きゅうにななろくです。", "03-3518-9276。"],
+    ["田中", "ゼロさんの、さんごいちはちの、きゅうにななろくですか。", "03-3518-9276，对吗？"],
+    ["王", "はい、そうです。ありがとうございます。", "对，没错。谢谢您。"],
+    ["田中", "すみません、田中{たなか}です。さくら病院{びょういん}ですか。", "打扰了，我姓田中。请问是さくら医院吗？"],
+    ["王", "田中{たなか}さん、さくら病院{びょういん}ですか。", "田中先生，是さくら医院吗？"],
+    ["田中", "いいえ、病院{びょういん}じゃありません。", "不是，不是医院。"],
+  ],
+  tail: "接电话的老人说，这个号码早就换过主人了。他只说了一句话：三十年前的事，去问车站对面的面包店。" },
+
+{ id: 7, title: "书里掉出来的东西",
+  lead: "去面包店之前，还得先上课。下课后，王在教室里翻开妈妈给她的旧日语书，一张纸从书页里滑了出来。",
+  lines: [
+    ["山田", "王{おう}さん、それは何{なん}ですか。", "王同学，那是什么？"],
+    ["王", "これですか。お母{かあ}さんの本{ほん}です。", "这个吗？是我妈妈的书。"],
+    ["山田", "日本語{にほんご}の本{ほん}ですか。", "是日语书吗？"],
+    ["王", "はい、そうです。…山田{やまだ}さん、これは何{なん}ですか。", "对。……山田，这是什么？"],
+    ["山田", "それは雑誌{ざっし}の写真{しゃしん}です。", "那是杂志上的图片。"],
+    ["王", "誰{だれ}の雑誌{ざっし}ですか。", "是谁的杂志？"],
+    ["山田", "名前{なまえ}は…「はな」です。", "名字是……“はな”。"],
+  ],
+  tail: "那是从旧杂志上撕下来的一页，上面全是各种新发型，角落里写着“はな”。一位医生，为什么要留着这个？" },
+
+{ id: 8, title: "站台尽头的钟",
+  lead: "第二天在站台等车时，田中盯着照片，又抬头看了看站台尽头那座老钟，看了好几遍。",
+  lines: [
+    ["田中", "王{おう}さん、この時計{とけい}！", "王同学，这座钟！"],
+    ["王", "その時計{とけい}ですか。写真{しゃしん}の時計{とけい}ですか。", "您说的那座钟？照片上的钟？"],
+    ["田中", "はい。この写真{しゃしん}の時計{とけい}は、あの時計{とけい}です。", "对。这张照片上的钟，就是那座钟。"],
+    ["王", "あの時計{とけい}！あの時計{とけい}は誰{だれ}のですか。", "那座钟！那座钟是谁的？"],
+    ["田中", "私{わたし}の会社{かいしゃ}のです。私{わたし}はエンジニアです。", "是我们公司的。我是工程师。"],
+    ["王", "そうですか！", "原来是这样！"],
+  ],
+  tail: "田中是铁路公司的工程师，那座老钟正好归他管。这张照片就是在这里拍的。三十年前，妈妈就站在王现在站的地方。" },
+
+{ id: 9, title: "这里是医院吗",
+  lead: "照片是在这个车站拍的，那么さくら医院应该就在附近。放学后，王和山田沿着站前的路一家一家找。",
+  lines: [
+    ["王", "山田{やまだ}さん、さくら病院{びょういん}はどこですか。", "山田，さくら医院在哪里？"],
+    ["山田", "病院{びょういん}ですか。あそこです。", "医院吗？在那边。"],
+    ["王", "山田{やまだ}さん！ここは美容院{びよういん}です！", "山田！这里是美容院！"],
+    ["山田", "すみません！ここは美容院{びよういん}ですか。", "不好意思！这里是美容院吗？"],
+    ["王", "はい。病院{びょういん}じゃありません。", "对。不是医院。"],
+    ["山田", "駅{えき}はあそこです。…ここはどこですか。", "车站在那边。……这里是哪里？"],
+  ],
+  tail: "两人站在路口笑得不行。医院没找到，倒是学到一件事：别让山田带路。天快黑了，车站对面，那家老面包店还亮着灯。" },
+
+{ id: 10, title: "面包店的老人",
+  lead: "面包店很小。看店的是一位头发全白的老人，他在这里卖了四十年面包。",
+  lines: [
+    ["王", "すみません、このパンはいくらですか。", "请问，这个面包多少钱？"],
+    ["店員", "二百円{にひゃくえん}です。", "两百日元。"],
+    ["王", "じゃ、パンとコーヒーをください。", "那请给我面包和咖啡。"],
+    ["店員", "ありがとうございます。五百円{ごひゃくえん}です。", "谢谢。一共五百日元。"],
+    ["王", "はい。…すみません、この写真{しゃしん}の人{ひと}は誰{だれ}ですか。", "给您。……请问，这张照片上的人是谁？"],
+    ["店員", "この人{ひと}は…はなさん！", "这个人是……はな！"],
+  ],
+  tail: "老人的手停在半空，咖啡洒出来一点。他认得她。" },
+
+{ id: 11, title: "每天三点半",
+  lead: "老人请王坐下。他说，はな从来没说过自己在哪里工作，他只记得她总穿一件白大褂。他看了一眼墙上的钟。",
+  lines: [
+    ["店員", "王{おう}さん、今{いま}、何時{なんじ}ですか。", "王同学，现在几点了？"],
+    ["王", "午後{ごご}三時二十五分{さんじにじゅうごふん}です。", "下午三点二十五分。"],
+    ["店員", "三時半{さんじはん}です。…これ、はなさんのコーヒーです。", "三点半了。……这个，是はな的咖啡。"],
+    ["王", "はなさんのコーヒーですか。", "はな的咖啡？"],
+    ["店員", "はい。午後{ごご}三時半{さんじはん}、はなさんのコーヒーです。", "对。下午三点半，是はな的咖啡。"],
+    ["王", "今{いま}もですか。", "现在也是吗？"],
+    ["店員", "はい、今{いま}もです。", "对，现在也是。"],
+  ],
+  tail: "老人倒了一杯咖啡，放在窗边的空位上。三十年了，他还是每天三点半倒这一杯。“她为什么不来了？”王问。老人说：先告诉你一件奇怪的事。" },
+
+{ id: 12, title: "星期一的怪事",
+  lead: "老人说的怪事，和はな休息的日子有关。",
+  lines: [
+    ["店員", "はなさんは毎日{まいにち}三時半{さんじはん}です。", "はな每天都是三点半来。"],
+    ["王", "毎日{まいにち}ですか。", "每天吗？"],
+    ["店員", "火曜日{かようび}から日曜日{にちようび}まで、毎日{まいにち}です。月曜日{げつようび}は休{やす}みです。", "从星期二到星期天，每天都来。星期一休息。"],
+    ["王", "月曜日{げつようび}は休{やす}みですか。日曜日{にちようび}は？", "星期一休息？那星期天呢？"],
+    ["店員", "日曜日{にちようび}は休{やす}みじゃありません。", "星期天不休息。"],
+    ["王", "日曜日{にちようび}、病院{びょういん}は休{やす}みです。", "可是星期天，医院是休息的呀。"],
+  ],
+  tail: "医院星期天休息，星期一开门，はな却正好反过来。王把这件事记在本子上，还是想不通。这天晚上，田中发来一条消息：我找到さくら医院了。" },
+
+{ id: 13, title: "开往さくら医院的车",
+  lead: "田中查到，东京郊外真的有一家さくら医院，开了五十多年。",
+  lines: [
+    ["田中", "王{おう}さん、さくら病院{びょういん}は東京{とうきょう}です。明日{あした}行{い}きますか。", "王同学，さくら医院就在东京。明天去吗？"],
+    ["王", "はい、行{い}きます！田中{たなか}さんも来{き}ますか。", "去！田中先生也来吗？"],
+    ["田中", "はい、私{わたし}も行{い}きます。", "嗯，我也去。"],
+    ["王", "電車{でんしゃ}で行{い}きますか。", "坐电车去吗？"],
+    ["田中", "いいえ、バスで行{い}きます。", "不，坐公交车去。"],
+    ["王", "ありがとうございます。明日{あした}、はなさんの病院{びょういん}へ行{い}きます。", "谢谢您。明天，我就去はな的医院。"],
+  ],
+  tail: "第二天，公交车在一栋白色大楼前停下。门口的牌子上写着：さくら病院。王的心跳得厉害。" },
+
+{ id: 14, title: "什么也吃不下",
+  lead: "医院的人翻完了三十年的名册：这里从来没有一个叫はな的医生，也没有叫はな的护士。回来的路上，王一句话也没说。田中带她进了一家小饭馆。",
+  lines: [
+    ["田中", "王{おう}さん、何{なに}を食{た}べますか。", "王同学，吃点什么？"],
+    ["王", "私{わたし}は水{みず}を飲{の}みます。", "我喝水。"],
+    ["田中", "ご飯{はん}は？パンは？", "饭呢？面包呢？"],
+    ["王", "水{みず}を飲{の}みます！", "我喝水！"],
+    ["田中", "映画{えいが}を見{み}ますか。音楽{おんがく}を聞{き}きますか。", "要不要看电影？听听音乐？"],
+    ["王", "…本{ほん}を読{よ}みます。お母{かあ}さんの本{ほん}を読{よ}みます。", "……我看书。我看妈妈的书。"],
+  ],
+  tail: "她翻开妈妈的旧日语书，想静一静。这时她才看见封底盖着一个蓝色小章：さくら大学图书馆。这本书，妈妈借了三十年没还。" },
+
+{ id: 15, title: "三十年没还的书",
+  lead: "第二天，王抱着书去了图书馆，在门口遇到了日语课的老师。",
+  lines: [
+    ["先生", "王{おう}さん、図書館{としょかん}で勉強{べんきょう}しますか。", "王同学，来图书馆学习吗？"],
+    ["王", "先生{せんせい}、すみません。この本{ほん}は図書館{としょかん}の本{ほん}です。", "老师，对不起。这本书是图书馆的。"],
+    ["先生", "そうですか。誰{だれ}の本{ほん}ですか。", "这样啊。是谁借的？"],
+    ["王", "私{わたし}のお母{かあ}さんのです。", "是我妈妈借的。"],
+    ["先生", "王{おう}さんのお母{かあ}さんの？", "你妈妈借的？"],
+    ["王", "はい。すみません！お金{かね}はいくらですか。", "是的。对不起！要罚多少钱？"],
+    ["先生", "いいえ。王{おう}さん、ここで雑誌{ざっし}を読{よ}みますか。", "不用。王同学，你要不要在这里看看杂志？"],
+  ],
+  tail: "老师笑了，没有罚款。他说，图书馆的书库里还留着三十年前的旧杂志。那张撕下来的发型页，说不定能查到出处。" },
+
+{ id: 16, title: "早上五点的书库",
+  lead: "从那天起，王每天泡在书库里，一本一本翻旧杂志。田中开始担心她了。",
+  lines: [
+    ["田中", "王{おう}さんは毎朝{まいあさ}何時{なんじ}に起{お}きますか。", "王同学每天早上几点起床？"],
+    ["王", "五時{ごじ}に起{お}きます。", "五点起床。"],
+    ["田中", "五時{ごじ}！朝{あさ}どこへ行{い}きますか。", "五点！早上去哪里？"],
+    ["王", "図書館{としょかん}へ行{い}きます。朝{あさ}から夜{よる}まで雑誌{ざっし}を読{よ}みます。", "去图书馆。从早到晚看杂志。"],
+    ["田中", "夜{よる}は何時{なんじ}ごろ寝{ね}ますか。", "晚上几点左右睡？"],
+    ["王", "二時{にじ}ごろ寝{ね}ます。", "两点左右睡。"],
+    ["田中", "王{おう}さん…。私{わたし}も毎日{まいにち}働{はたら}きます。十一時{じゅういちじ}に寝{ね}ます。", "王同学……我也每天上班，我十一点就睡。"],
+  ],
+  tail: "那天夜里妈妈打来电话：下下个星期一，我到东京看你。王抬头看日历。找到はな的时间，只剩两周多一点。" },
+
+{ id: 17, title: "他说他见到了",
+  lead: "又过了一周。一整架杂志都翻完了，什么也没有。星期一早上，王站在站台上，眼睛是红的。",
+  lines: [
+    ["田中", "週末{しゅうまつ}どこへ行{い}きましたか。", "周末去哪里了？"],
+    ["王", "どこへも行{い}きませんでした。図書館{としょかん}で雑誌{ざっし}を読{よ}みました。", "哪里也没去。在图书馆看杂志。"],
+    ["田中", "今朝{けさ}は何{なに}を食{た}べましたか。", "今天早上吃了什么？"],
+    ["王", "何{なに}も食{た}べませんでした。水{みず}を飲{の}みました。", "什么也没吃。喝了点水。"],
+    ["田中", "王{おう}さん、先週{せんしゅう}、私{わたし}ははなさんに会{あ}いました。", "王同学，上周，我见到はな了。"],
+    ["王", "田中{たなか}さん？誰{だれ}に会{あ}いましたか。", "田中先生？您见到谁了？"],
+    ["田中", "はなさんです。私{わたし}は、はなさんに会{あ}いました。", "はな。我见到はな了。"],
+  ],
+  tail: "电车进站了，风把王的头发吹得乱七八糟。她站着一动不动。" },
+
+{ id: 18, title: "明天，公园",
+  lead: "田中不肯在站台上说清楚，只说要带她去一个地方。",
+  lines: [
+    ["王", "どこで会{あ}いましたか。", "在哪里见到的？"],
+    ["田中", "公園{こうえん}です。王{おう}さん、明日{あした}一緒{いっしょ}に公園{こうえん}へ行{い}きませんか。", "公园。王同学，明天一起去公园吧？"],
+    ["王", "行{い}きましょう！今{いま}、行{い}きませんか。", "去！现在去吧？"],
+    ["田中", "今{いま}はちょっと…。明日{あした}、昼{ひる}ご飯{はん}も一緒{いっしょ}に食{た}べませんか。", "现在不太方便……明天一起吃午饭吧？"],
+    ["王", "昼{ひる}ご飯{はん}？", "午饭？"],
+    ["田中", "はい。飲{の}み物{もの}も買{か}いましょう。お茶{ちゃ}はいいですね。", "嗯。再买点饮料吧。茶就不错。"],
+  ],
+  tail: "田中笑得有点奇怪。那天晚上，王把妈妈的信放在枕头边，一夜没睡。" },
+
+{ id: 19, title: "はなさん",
+  lead: "第二天中午，公园里很安静。田中提着两瓶茶，带王走到树下的一张旧木桌前。",
+  lines: [
+    ["王", "田中{たなか}さん、はなさんはどこにいますか。", "田中先生，はな在哪里？"],
+    ["田中", "ここにいますよ。", "就在这里呀。"],
+    ["王", "どこですか。", "在哪里？"],
+    ["田中", "机{つくえ}の下{した}にいますよ。", "在桌子下面。"],
+    ["王", "机{つくえ}の下{した}？…あ、猫{ねこ}がいます。", "桌子下面？……啊，有一只猫。"],
+    ["田中", "はい。はなさんです。", "对。这就是はな。"],
+    ["王", "田中{たなか}さん！", "田中先生！"],
+    ["田中", "すみません。王{おう}さん、今日{きょう}は休{やす}みましょう。", "对不起。王同学，今天就休息一下吧。"],
+  ],
+  tail: "王气得想打人，眼泪却先掉了下来。田中把茶递给她。小猫跳上桌子，项圈上挂着一个铜牌：正面是“はな”，背面是车站对面那家面包店的名字。" },
+
+{ id: 20, title: "第三个人",
+  lead: "王抱着猫回到面包店。老人笑了：这是他的猫，名字是为了纪念一位老客人。王又把照片放到柜台上。",
+  lines: [
+    ["店員", "いらっしゃいませ。あ、はな！りんごを一{ひと}つ、どうぞ。", "欢迎光临。啊，はな！来，请吃个苹果。"],
+    ["王", "ありがとうございます。…写真{しゃしん}の人{ひと}は二人{ふたり}です。", "谢谢。……照片上有两个人。"],
+    ["店員", "いいえ、三人{さんにん}です。", "不，是三个人。"],
+    ["王", "三人{さんにん}ですか。", "三个人？"],
+    ["店員", "はい。ここに一人{ひとり}います。", "对。这里还有一个。"],
+    ["王", "誰{だれ}ですか。", "是谁？"],
+    ["店員", "私{わたし}です。", "是我。"],
+  ],
+  tail: "老人指着照片最下面。地上有一道影子，系着面包店的围裙。按下快门的人，就是他。他的手开始发抖：我想起来了一点。" },
+
+{ id: 21, title: "钟的日子",
+  lead: "老人说要再想一想。王拿着两个苹果回到站台，把这件事告诉田中。田中听完，抬头看着老钟，没有笑。",
+  lines: [
+    ["王", "このりんごはおいしいですね。", "这个苹果真好吃。"],
+    ["田中", "おいしいです。…王{おう}さん、あの大{おお}きい時計{とけい}は古{ふる}いです。", "好吃。……王同学，那座大钟很旧了。"],
+    ["王", "はい。写真{しゃしん}の時計{とけい}です。", "是啊。是照片上的钟。"],
+    ["田中", "来週{らいしゅう}、新{あたら}しい時計{とけい}が来{き}ます。小{ちい}さい時計{とけい}です。", "下周，新钟就来了。是一座小钟。"],
+    ["王", "新{あたら}しい時計{とけい}？じゃ、あの時計{とけい}は？", "新钟？那这座钟呢？"],
+    ["田中", "…来週{らいしゅう}、ありません。", "……下周，就没有了。"],
+  ],
+  tail: "妈妈下周一到东京。老钟下周二拆除。田中说他争取过了，公司已经定了。" },
+
+{ id: 22, title: "安静的小城",
+  lead: "王又去了面包店。老人想起来了：はな走的那天来告别过，说要回老家。",
+  lines: [
+    ["王", "はなさんは今{いま}どこにいますか。", "はな现在在哪里？"],
+    ["店員", "家族{かぞく}の町{まち}へ帰{かえ}りました。", "她回家乡的小城去了。"],
+    ["王", "どんな町{まち}ですか。", "是什么样的小城？"],
+    ["店員", "とても静{しず}かな町{まち}です。きれいな町{まち}です。", "很安静的小城。很漂亮的小城。"],
+    ["王", "有名{ゆうめい}な町{まち}ですか。", "是有名的地方吗？"],
+    ["店員", "はい、有名{ゆうめい}です。名前{なまえ}は…。", "嗯，挺有名。名字是……"],
+    ["店員", "すみません。町{まち}の名前{なまえ}は…。", "对不起。那个地方的名字……"],
+  ],
+  tail: "老人怎么也想不起来。日本安静又漂亮的小城，有几千个。" },
+
+{ id: 23, title: "这句话在哪里听过",
+  lead: "这周有一场日语小考，王考得一塌糊涂。考完，山田拎着一袋土特产回到教室，他周末回了一趟老家。",
+  lines: [
+    ["山田", "王{おう}さん、テストはどうでしたか。", "王同学，考试怎么样？"],
+    ["王", "とても難{むずか}しかったです。山田{やまだ}さんの旅行{りょこう}はどうでしたか。", "特别难。山田的旅行怎么样？"],
+    ["山田", "とても楽{たの}しかったです。天気{てんき}もよかったです。", "特别开心。天气也很好。"],
+    ["王", "どこへ行{い}きましたか。", "去哪里了？"],
+    ["山田", "私{わたし}の家族{かぞく}の町{まち}です。", "我家在的小城。"],
+    ["王", "どんな町{まち}ですか。", "是什么样的小城？"],
+    ["山田", "とても静{しず}かな町{まち}です。きれいな町{まち}です。", "很安静的小城。很漂亮的小城。"],
+    ["王", "そうですか。いいですね。", "这样啊。真好。"],
+  ],
+  tail: "王还在想考试的事，随口应了一句。这句话，好像在哪里听过。" },
+
+{ id: 24, title: "山田的妈妈",
+  lead: "午饭时间。山田打开饭盒，里面是一块烧得发黑的鱼。",
+  lines: [
+    ["王", "山田{やまだ}さん、この魚{さかな}は…。", "山田，这条鱼……"],
+    ["山田", "お母{かあ}さんの料理{りょうり}です。", "是我妈妈做的。"],
+    ["王", "お母{かあ}さんは料理{りょうり}が上手{じょうず}ですか。", "你妈妈做菜好吃吗？"],
+    ["山田", "いいえ、下手{へた}です。魚{さかな}も肉{にく}も下手{へた}です。", "不，做得很差。鱼和肉都不行。"],
+    ["王", "じゃ、お母{かあ}さんは何{なに}が上手{じょうず}ですか。", "那你妈妈擅长什么？"],
+    ["山田", "歌{うた}も下手{へた}です。スポーツも嫌{きら}いです。でも、お母{かあ}さんは…。", "唱歌也不行，运动也讨厌。不过，我妈妈她……"],
+  ],
+  tail: "上课铃响了。山田笑了笑，用手拨了拨头发，没有说完。" },
+
+{ id: 25, title: "最想要的东西",
+  lead: "离妈妈到东京还有四天。田中、山田和王坐在面包店里。田中想让气氛轻松一点，问了个问题。",
+  lines: [
+    ["田中", "今{いま}、何{なに}が欲{ほ}しいですか。", "现在最想要什么？"],
+    ["山田", "新{あたら}しい靴{くつ}が欲{ほ}しいです。自転車{じてんしゃ}も欲{ほ}しいです。", "我想要新鞋。自行车也想要。"],
+    ["山田", "京都{きょうと}でおいしい寿司{すし}を食{た}べたいです。", "还想在京都吃好吃的寿司。"],
+    ["王", "京都{きょうと}？", "京都？"],
+    ["山田", "はい。私{わたし}の家族{かぞく}の町{まち}は京都{きょうと}です。", "嗯。我家在京都。"],
+    ["田中", "王{おう}さんは？", "王同学呢？"],
+    ["王", "私{わたし}は、はなさんに会{あ}いたいです。お母{かあ}さんと、あの時計{とけい}の下{した}で写真{しゃしん}を撮{と}りたいです。", "我想见到はな。想和妈妈在那座钟下面拍张照片。"],
+  ],
+  tail: "说完这句话，王觉得头有点晕。回到宿舍，她发起了高烧。" },
+
+{ id: 26, title: "来不及了",
+  lead: "王烧了两天。这天晚上，田中打来电话。",
+  lines: [
+    ["田中", "今晩{こんばん}、一緒{いっしょ}にご飯{はん}を食{た}べませんか。", "今晚一起吃饭吧？"],
+    ["王", "すみません、今晩{こんばん}はちょっと…。", "对不起，今晚有点……"],
+    ["田中", "どうしてですか。", "怎么了？"],
+    ["王", "私{わたし}は風邪{かぜ}ですから。", "因为我感冒了。"],
+    ["田中", "大変{たいへん}ですね。はなさんは？", "真辛苦。はな那边呢？"],
+    ["王", "時間{じかん}がありません。月曜日{げつようび}にお母{かあ}さんが来{き}ます。でも、はなさんは…。", "没有时间了。星期一妈妈就来了。可是はな她……"],
+    ["田中", "王{おう}さん、今{いま}は休{やす}みましょう。", "王同学，现在先休息吧。"],
+  ],
+  tail: "第二天，王裹着围巾去上课。老师让每个人在纸上写名字。她拿笔时，照片从书里滑了出来。" },
+
+{ id: 27, title: "那个字",
+  lead: "老师弯腰捡起照片，翻到背面，看了很久。",
+  lines: [
+    ["先生", "王{おう}さん、これは何{なん}ですか。ゆっくり読{よ}んでください。", "王同学，这是什么？请慢慢读一下。"],
+    ["王", "さくら、びょういん…。はなさんの病院{びょういん}です。", "さくら，医院……是はな的医院。"],
+    ["先生", "もう一度{いちど}、ゆっくり言{い}ってください。", "请再慢慢说一遍。"],
+    ["王", "さくら、びょう…。", "さくら，びょう……"],
+    ["先生", "王{おう}さん、この「よ」は小{ちい}さいですか。", "王同学，这个“よ”是小写的吗？"],
+    ["王", "いいえ、大{おお}きいです。…びよ…びよういん…？", "不，是大写的。……びよ……びよういん……？"],
+    ["先生", "はい。病院{びょういん}じゃありません。美容院{びよういん}です。", "对。不是医院，是美容院。"],
+    ["王", "…わかりました。美容院{びよういん}！", "……我明白了。美容院！"],
+  ],
+  tail: "医院，美容院。第一站就学过的那个小字。星期一休息，星期天开门，白大褂，发型杂志。はな不是医生，她是美发师。" },
+
+{ id: 28, title: "もしもし",
+  lead: "王冲出教室，脑子里全是一句没说完的话：不过，我妈妈她……外面下着大雨，她拨通了电话。",
+  lines: [
+    ["王", "もしもし、山田{やまだ}さん、今{いま}何{なに}をしていますか。", "喂，山田，你现在在做什么？"],
+    ["山田", "部屋{へや}で音楽{おんがく}を聞{き}いています。", "在房间里听音乐。"],
+    ["王", "山田{やまだ}さんのお母{かあ}さんは、何{なに}が上手{じょうず}ですか。", "你妈妈擅长什么？"],
+    ["山田", "お母{かあ}さんは京都{きょうと}に住{す}んでいます。美容院{びよういん}で働{はたら}いています。", "我妈妈住在京都，在美容院工作。"],
+    ["王", "美容院{びよういん}！山田{やまだ}さん、お母{かあ}さんの名前{なまえ}は？", "美容院！山田，你妈妈叫什么名字？"],
+    ["山田", "はなです。山田{やまだ}はなです。", "はな。山田はな。"],
+    ["山田", "王{おう}さん？もしもし、王{おう}さん？", "王同学？喂，王同学？"],
+  ],
+  tail: "王站在雨里，一句话也说不出来。照片上はな的眼睛，和山田一模一样。" },
+
+{ id: 29, title: "京都",
+  lead: "星期六，京都。雨停了。小城巷子的尽头有一家小小的美容院，招牌已经褪色：さくらびよういん。玻璃门里，一位白发女士穿着白大褂，正在擦镜子。",
+  lines: [
+    ["山田", "お母{かあ}さん、開{あ}けてもいいですか。", "妈，我可以开门吗？"],
+    ["山田", "こちらは私{わたし}の友達{ともだち}の王{おう}さんです。", "这位是我的朋友小王。"],
+    ["王", "はじめまして。王{おう}です。この写真{しゃしん}を見{み}てください。", "初次见面。我姓王。请看这张照片。"],
+    ["王", "この手紙{てがみ}は、はなさんのです。", "这封信是给您的。"],
+    ["山田", "王{おう}さん、ここで開{あ}けてはいけません。", "（はな开口了，山田替她说）小王，不能在这里拆。"],
+    ["王", "駄目{だめ}ですか。どうしてですか。", "不行吗？为什么？"],
+    ["山田", "月曜日{げつようび}の午後{ごご}三時半{さんじはん}、あの時計{とけい}の下{した}で開{あ}けてください。", "请星期一下午三点半，在那座钟下面拆。"],
+    ["山田", "お母{かあ}さんの休{やす}みは月曜日{げつようび}ですから。", "因为我妈妈星期一休息。", { say: "おかあさんのやすみはげつようびですから。" }],
+  ],
+  tail: "はな摸着照片背面那个写得太大的“よ”，哭了又笑。星期一，三点半。那是老钟走的最后一天。" },
+
+{ id: 30, title: "三点半",
+  lead: "星期一下午。田中最后一次给老钟校准了时间。电车进站，王的妈妈走下来。站台另一头，はな穿着那件白大褂。三十年了，两个人谁也说不出话。はな把信递给王：你来读。",
+  lines: [
+    ["田中", "三時半{さんじはん}です。", "三点半了。"],
+    ["手紙", "はなさん、お元気{げんき}ですか。", "はな，你好吗？"],
+    ["手紙", "私{わたし}は中国{ちゅうごく}に帰{かえ}りました。", "我回到中国了。"],
+    ["手紙", "私{わたし}の日本語{にほんご}は、とても下手{へた}です。", "我的日语还很差。"],
+    ["手紙", "でも、毎日{まいにち}勉強{べんきょう}しています。", "可是我每天都在学。"],
+    ["手紙", "また一緒{いっしょ}にコーヒーを飲{の}みましょう。", "我们再一起喝咖啡吧。"],
+    ["手紙", "三時半{さんじはん}に、あの時計{とけい}の下{した}で待{ま}っています。", "三点半，我在那座钟下面等你。"],
+    ["手紙", "これからも、どうぞよろしくお願{ねが}いします。", "今后也请多多关照。"],
+  ],
+  tail: "这封信写于三十年前，寄出去，又被退了回来。老人端来三杯咖啡。老钟停在三点半。信里的每一个词，你现在都学过了。" },
+];
+/* ---------- 各站小故事 ----------
+   每站一集连续剧，到站才解锁。内容在 story_data.js，录音在 extra-story.js，用到才下载。
+   进度记在 S.story：{ 站号: { at: 时间戳 } }。
+   入口：按钮写 data-a="story" 打开全屏列表；storyView() 返回列表 HTML，storyCard() 返回首页小卡片。 */
+const STORY_PACK = "extra-story.js";
+/* 已有录音的句子继续用原来的包，其余的指向故事录音包 */
+for (const ep of STORY_EP) for (const l of ep.lines) { const k = plain(l[1]); if (!hasClip(k)) CLIP_AT[k] = STORY_PACK; }
+const STORY_LABEL = { 手紙: "妈妈的信" };
+let storyOn = null;
+const storyLog = () => S.story ||= {};
+const storyEp = id => STORY_EP.find(e => e.id === id);
+const storyOpenAt = id => !!S.done[id] && !!storyEp(id);
+const storySub = () => { const n = STORY_EP.filter(e => storyOpenAt(e.id)).length; return n ? `已解锁 ${n} 集` : "到站解锁第一集"; };
+const storyZhOn = () => S.set.storyZh !== false;
+const storyNew = () => STORY_EP.find(e => storyOpenAt(e.id) && !storyLog()[e.id]);
+
+/* 列表做成发车案内屏：到过的站能看，没到的站只显示站名 */
+function storyRows() {
+  return LESSONS.map(l => {
+    const ep = storyEp(l.id), open = storyOpenAt(l.id), read = !!storyLog()[l.id];
+    const cls = open ? read ? "ok" : "on" : "";
+    const title = open ? esc(ep.title) : `<span lang="ja">${esc(l.st)}</span>`;
+    return `<li class="${cls}"><button data-a="storyEp" data-v="${l.id}" aria-label="第 ${l.id} 集${open ? "，" + esc(ep.title) : "，未解锁"}"><span class="b-k b${l.unit}">${code(l.id)}</span><span class="b-t">${title}</span><span class="b-s">${open ? read ? "已看" : "新" : "未到站"}</span></button></li>`;
+  }).join("");
+}
+function storyHint() {
+  const fresh = storyNew(), n = nextLesson();
+  if (fresh) return `<button class="memo st-next" data-a="storyEp" data-v="${fresh.id}"><span class="st-kick">今天有新一集</span><b>第 ${fresh.id} 集　${esc(fresh.title)}</b></button>`;
+  if (n && storyEp(n.id)) return `<div class="st-wait">下一集在第 ${n.id} 站<b lang="ja">${esc(n.st)}</b>，到站就能看。</div>`;
+  return "";
+}
+function storyView() {
+  const seen = Object.keys(storyLog()).length;
+  return `<div class="st-list">${storyHint()}
+    <section class="board st-board"><header><b lang="ja">各駅物語</b><span>已看 ${seen} / ${STORY_EP.length}</span></header><ul>${storyRows()}</ul></section></div>`;
+}
+/* 首页入口用的小卡片，没有新一集时返回空字符串 */
+function storyCard() {
+  const fresh = storyNew();
+  return fresh ? `<button class="memo st-next" data-a="story"><span class="st-kick">各站小故事</span><b>新一集：${esc(fresh.title)}</b></button>` : "";
+}
+
+function storyShow(html) {
+  stopSound();
+  sesEl.hidden = false;
+  document.body.style.overflow = "hidden";
+  sesEl.innerHTML = html;
+}
+function storyList() {
+  storyOn = null;
+  storyShow(`<div class="ses-head st-head"><button class="x" data-a="storyClose" aria-label="返回">×</button><b>各站小故事</b><span></span></div><div class="ses-body"><div class="ses-in">${storyView()}</div></div><div></div>`);
+}
+function storyBub(l, i, on) {
+  const [who, raw, zh, extra] = l, letter = who === "手紙", me = who === "王";
+  const cls = `bub st-bub${me ? " me" : ""}${letter ? " st-letter" : ""}`;
+  return `<button class="${cls}" data-who="${esc(who)}" data-a="storySay" data-v="${i}"><span lang="zh">${esc(STORY_LABEL[who] || who)}</span><b lang="ja">${ruby(raw)}</b><small class="st-zh${on.peek.has(i) ? " peek" : ""}" data-a="storyPeek" data-v="${i}">${esc(zh)}</small>${extra?.n ? `<em class="st-n">${esc(extra.n)}</em>` : ""}</button>`;
+}
+function storyFoot(on) {
+  const { ep, shown } = on, total = ep.lines.length;
+  if (on.playing) return `<button class="btn stop" data-a="storyStop">停止</button>`;
+  if (shown < total) return `<button class="btn" data-a="storyStep" data-primary>${shown ? "下一句" : "开始"}</button><button class="btn ghost" data-a="storyAll">整集连播</button>`;
+  const next = storyEp(ep.id + 1), go = next && storyOpenAt(next.id);
+  const later = next && LESSONS[next.id - 1];
+  return `${go ? `<button class="btn" data-a="storyEp" data-v="${next.id}" data-primary>看下一集</button>` : later ? `<p class="st-lock">下一集在第 ${later.id} 站<b lang="ja">${esc(later.st)}</b>，到站就能看。</p>` : ""}<button class="btn ghost" data-a="storyAll">整集连播</button>`;
+}
+function storyPaint() {
+  const on = storyOn;
+  if (!on) return;
+  const { ep, shown } = on, total = ep.lines.length, l = LESSONS[ep.id - 1], pct = Math.round(shown / total * 100);
+  const body = sesEl.querySelector(".ses-body"), keep = body && body.dataset.ep === String(ep.id) ? body.scrollTop : 0;
+  const lines = ep.lines.slice(0, shown).map((x, i) => storyBub(x, i, on)).join("");
+  const end = shown >= total;
+  sesEl.innerHTML = `<div class="ses-head"><button class="x" data-a="storyBack" aria-label="返回列表">×</button><div class="track" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><u style="width:${pct}%"></u><span style="position:absolute;inset:0">${TRAIN.replace("<svg", `<svg style="left:${pct}%"`)}</span></div><button class="ro-btn" data-a="storyZh" aria-pressed="${!storyZhOn()}">${storyZhOn() ? "隐藏中文" : "显示中文"}</button></div>
+    <div class="ses-body" data-ep="${ep.id}"><div class="ses-in st-ep${storyZhOn() ? "" : " st-nozh"}">
+      <header class="st-ticket"><span>第 ${ep.id} 集<em lang="ja">${esc(l.st)}</em></span><h2>${esc(ep.title)}</h2></header>
+      <p class="st-lead">${esc(ep.lead)}</p>
+      ${lines ? `<div class="talk st-talk">${lines}</div>` : ""}
+      ${end ? `<aside class="st-tail"><span>${ep.id === STORY_EP[STORY_EP.length - 1].id ? "终点" : "未完待续"}</span><p>${esc(ep.tail)}</p></aside>` : ""}
+    </div></div>
+    <div class="ses-foot"><div class="st-foot">${storyFoot(on)}</div></div>`;
+  const b = sesEl.querySelector(".ses-body");
+  b.scrollTop = keep;
+  if (on.scroll) { on.scroll = false; b.scrollTop = b.scrollHeight; }
+  storyMark(on.at);
+}
+function storyMark(i) { sesEl.querySelectorAll(".st-bub").forEach((b, n) => b.classList.toggle("play", n === i)); }
+function storyRead(on) {
+  if (on.shown < on.ep.lines.length || storyLog()[on.ep.id]) return;
+  storyLog()[on.ep.id] = { at: Date.now() };
+  save();
+}
+const storyKey = (on, i) => plain(on.ep.lines[i][1]);
+function storyPlay(on, i) {
+  if (storyOn !== on || !on.playing) return;
+  if (i >= on.ep.lines.length) { on.playing = false; on.at = -1; storyRead(on); on.scroll = true; return storyPaint(); }
+  on.at = i;
+  if (on.shown <= i) on.shown = i + 1;
+  on.scroll = true;
+  storyPaint();
+  say(storyKey(on, i), undefined, () => setTimeout(() => storyPlay(on, i + 1), 260));
+}
+
+Object.assign(ACT, {
+  story() { storyList(); },
+  storyClose() { storyOn = null; leave(); },
+  storyBack() { storyList(); },
+  storyEp(v) {
+    const ep = storyEp(+v);
+    if (!storyOpenAt(+v)) return toast(`到达第 ${+v} 站才能看这一集`);
+    stopSound();
+    storyOn = { ep, shown: storyLog()[ep.id] ? ep.lines.length : 0, playing: false, at: -1, peek: new Set(), scroll: false };
+    sesEl.hidden = false;
+    document.body.style.overflow = "hidden";
+    storyPaint();
+  },
+  storyStep() {
+    const on = storyOn;
+    if (!on) return;
+    on.playing = false;
+    on.at = on.shown; on.shown++;
+    storyRead(on);
+    on.scroll = true;
+    storyPaint();
+    const i = on.at;
+    say(storyKey(on, i), undefined, () => { if (storyOn === on && on.at === i && !on.playing) { on.at = -1; storyMark(-1); } });
+  },
+  storyAll() {
+    const on = storyOn;
+    if (!on) return;
+    on.playing = true;
+    storyPlay(on, 0);
+  },
+  storyStop() {
+    const on = storyOn;
+    if (!on) return;
+    on.playing = false; on.at = -1;
+    stopSound();
+    storyPaint();
+  },
+  storySay(v) {
+    const on = storyOn, i = +v;
+    if (!on) return;
+    const was = on.playing;
+    on.playing = false; on.at = i;
+    if (was) storyPaint(); else storyMark(i);
+    say(storyKey(on, i), undefined, () => { if (storyOn === on && on.at === i) { on.at = -1; storyMark(-1); } });
+  },
+  storyZh() { S.set.storyZh = !storyZhOn(); save(); storyOn?.peek.clear(); storyPaint(); },
+  storyPeek(v, b) {
+    const on = storyOn, i = +v;
+    if (!on) return;
+    if (storyZhOn()) return ACT.storySay(v);
+    on.peek[on.peek.has(i) ? "delete" : "add"](i);
+    b.classList.toggle("peek", on.peek.has(i));
+  },
+});
+["story", "storyEp", "storyStep", "storyAll", "storySay", "storyPeek"].forEach(a => QUIET.add(a));
+document.addEventListener("keydown", e => {
+  if (!storyOn || ses || e.key !== "Enter") return;
+  const p = sesEl.querySelector("[data-primary]");
+  if (p) { e.preventDefault(); p.click(); }
+});
 /* ---------- 保存文件 ---------- */
 /* 在 Claude 里走下载能力；手机上用系统分享，可以存到相册或文件；电脑上走普通下载 */
 async function saveFile(name, blob) {
@@ -5583,8 +6174,8 @@ function syncPanel() {
 }
 
 /* ---------- 安装和离线 ---------- */
-/* 不走 gen_audio.js 索引的录音包：听高低的同音词，以后新增的也放这里 */
-const EXTRA_PACKS = ["extra-hear.js"];
+/* 不走 gen_audio.js 索引的录音包：听高低的同音词和各站小故事 */
+const EXTRA_PACKS = ["extra-hear.js", "extra-story.js"];
 const allPacks = () => [...AUDIO.clips, ...AUDIO.slow, ...EXTRA_PACKS];
 const standalone = () => !!window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone === true;
 const isIos = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
