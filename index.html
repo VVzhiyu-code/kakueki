@@ -773,6 +773,29 @@ svg .kbox { fill: var(--plate); }
 @media print {
   .pt .hi, .pt .up, .pt .dn { border-color: #d23b2f; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
+
+/* 音高镜：做成发车案内屏，颜色不随主题变化 */
+.mir { gap: 10px; }
+.mir-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding-right: 30px; }
+.mir-top b { font-size: 26px; line-height: 1.2; }
+.mir-tag { font-size: 12px; font-weight: 700; letter-spacing: .06em; color: var(--line-deep); }
+.mir-board { display: grid; gap: 4px; padding: 10px 12px 8px; background: var(--board); color: var(--board-ink); border-radius: var(--r); }
+.mir-board svg { display: block; width: 100%; height: auto; overflow: visible; }
+.mir-col { stroke: color-mix(in srgb, var(--board-dim) 34%, transparent); stroke-dasharray: 2 4; }
+.mir-mid { stroke: color-mix(in srgb, var(--board-dim) 24%, transparent); }
+.mir-nat, .mir-you { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.mir-nat { stroke: var(--led); }
+.mir-you { stroke: var(--led-ok); }
+.mir-key { display: flex; gap: 14px; font-size: 12px; color: var(--board-dim); }
+.mir-key span { display: inline-flex; align-items: center; gap: 6px; }
+.mir-key span::before { content: ""; width: 16px; height: 3px; border-radius: 2px; background: var(--led); }
+.mir-key .k-you::before { background: var(--led-ok); }
+.mir-beats { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); text-align: center; font-size: 15px; color: var(--board-ink); }
+.mir-msg { font-size: 15px; text-wrap: pretty; min-height: 3em; }
+.mir-level { height: 6px; overflow: hidden; background: var(--line-soft); border-radius: 3px; }
+.mir-level u { display: block; width: 0; height: 100%; background: var(--line); }
+.mir-btns { display: grid; gap: 8px; }
+.mir-sub { display: flex; justify-content: center; gap: 8px; }
 </style>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="ink"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.1 1.550"/><feComposite in="SourceGraphic" operator="in"/></filter></svg>
 <div id="app"></div>
@@ -2595,7 +2618,7 @@ function stepBody(st) {
   }
   if (st.k === "word") {
     const reading = st.w[0].replace("〜", "") === st.w[1] ? "" : `<div class="read" lang="ja">${pitchText(st.w)}</div>`;
-    return { html: `<div class="tag-l">新词 ${st.i + 1} / ${st.n}</div><div class="card"><div class="big" lang="ja">${esc(st.w[0])}</div>${reading}<div class="roma">${romaji(st.w[1])}</div><div class="mean">${esc(st.w[2])}</div><div class="card-btns">${soundBtn(st.w[1])}<button class="chip" data-a="slow" data-v="${esc(st.w[1])}">慢速听</button></div></div>${wordLearn(st.w, st.l)}${aiBlock(st, "还是不会？请导师讲这个词")}`, foot: btn("读熟了，下一个"), auto: st.w[1] };
+    return { html: `<div class="tag-l">新词 ${st.i + 1} / ${st.n}</div><div class="card"><div class="big" lang="ja">${esc(st.w[0])}</div>${reading}<div class="roma">${romaji(st.w[1])}</div><div class="mean">${esc(st.w[2])}</div><div class="card-btns">${soundBtn(st.w[1])}<button class="chip" data-a="slow" data-v="${esc(st.w[1])}">慢速听</button>${mirBtn(st.w)}</div></div>${wordLearn(st.w, st.l)}${aiBlock(st, "还是不会？请导师讲这个词")}`, foot: btn("读熟了，下一个"), auto: st.w[1] };
   }
   if (st.k === "rule") {
     const g = st.g;
@@ -2828,7 +2851,7 @@ const ACT = {
   reset() { const epoch = (S.epoch || 0) + 1; S = { ...blank(), epoch }; clearT(); registerMy(); confirmReset = false; save(); render(); toast("进度已清空"); },
 };
 /* 这些操作有自己的声音或会朗读，不再叠加点击音 */
-const QUIET = new Set(["say", "slow", "mc", "check", "idk", "ngrade", "nflip", "kpeek", "kmt", "kspick", "playAll", "setSfx", "review", "lesson", "ncards", "gplay"]);
+const QUIET = new Set(["say", "slow", "mc", "check", "idk", "ngrade", "nflip", "kpeek", "kmt", "kspick", "playAll", "setSfx", "review", "lesson", "ncards", "gplay", "mirGo", "mirNat", "mirMine"]);
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-a]");
   if (!b || b.disabled) return;
@@ -2983,6 +3006,248 @@ function pitchChart(w) {
 }
 Object.assign(ACT, {
   setPitch() { S.set.pitch = !pitchOn(); save(); render(); },
+});
+/* ---------- 音高镜 ----------
+   把用户的跟读和原声画在同一张图上。两边走同一套算法：取基频，换算成相对自己中位数的半音，
+   所以男女声可以直接比。全部在本机计算，录音不存也不上传。*/
+
+/* 基频提取：用 YIN 的差分函数找每帧的候选周期，再用动态规划选一条连续的路径，
+   这样不会在男声和手机录音上跳到半频或倍频。10ms 一帧，音域 70 到 450Hz，先降到约 16kHz */
+function pitchTrack(x, sr) {
+  const k = Math.max(1, Math.round(sr / 16000)), fs = sr / k, n = Math.floor(x.length / k), y = new Float32Array(n);
+  for (let i = 0; i < n; i++) { let s = 0; for (let j = 0; j < k; j++) s += x[i * k + j]; y[i] = s / k; }
+  const hop = Math.round(fs * .01), win = Math.round(fs * .04), lo = Math.floor(fs / 450), hi = Math.ceil(fs / 70);
+  const d = new Float32Array(hi + 2), cands = [], rms = [];
+  for (let at = 0; at + win + hi + 1 < n; at += hop) {
+    let e = 0;
+    for (let i = 0; i < win; i++) e += y[at + i] * y[at + i];
+    rms.push(Math.sqrt(e / win));
+    for (let tau = 1; tau <= hi; tau++) {
+      let s = 0;
+      for (let i = 0; i < win; i++) { const v = y[at + i] - y[at + i + tau]; s += v * v; }
+      d[tau] = s;
+    }
+    let sum = 0;
+    for (let tau = 1; tau <= hi; tau++) { sum += d[tau]; d[tau] = sum > 0 ? d[tau] * tau / sum : 1; }
+    const c = [];
+    for (let t = lo; t < hi; t++) if (d[t] < .72 && d[t] <= d[t - 1] && d[t] <= d[t + 1]) {
+      const a = d[t - 1], b = d[t], z = d[t + 1], den = a - 2 * b + z;
+      c.push([t + (den ? (a - z) / (2 * den) : 0), 1 - b]);
+    }
+    cands.push(c.sort((p, q) => q[1] - p[1]).slice(0, 4));
+  }
+  /* 每帧多一个“清音”状态。候选越清晰代价越小，频率跳得越远代价越大；
+     清音段落后面要接着前面的音高，否则 し す 后面的元音容易落到低八度 */
+  const top = rms.reduce((m, v) => Math.max(m, v), 0), UNV = .62, JUMP = 1.2, SWITCH = .15, OCT = .2;
+  const gap = (a, b) => Math.abs(Math.log2(a / b));
+  let cost = [0], mem = [0], last = [null];
+  const back = [];
+  cands.forEach((c, i) => {
+    const states = rms[i] > top * .05 ? [...c, null] : [null];
+    const short = c.reduce((m, v) => Math.min(m, v[0]), Infinity);
+    const step = states.map(st => {
+      const local = st ? 1 - st[1] + OCT * Math.log2(st[0] / short) : UNV;
+      let best = Infinity, from = 0;
+      last.forEach((p, j) => {
+        const move = st && p ? JUMP * gap(st[0], p[0]) : st ? SWITCH + (mem[j] ? JUMP * .5 * gap(st[0], mem[j]) : 0) : p ? SWITCH : 0;
+        if (cost[j] + move < best) { best = cost[j] + move; from = j; }
+      });
+      return [best + local, from];
+    });
+    mem = step.map(([, from], j) => states[j] ? states[j][0] : mem[from]);
+    back.push(step.map(v => v[1]));
+    cost = step.map(v => v[0]);
+    last = states;
+    cands[i] = states;
+  });
+  const f0 = new Array(cands.length).fill(0);
+  let at = cost.reduce((b, v, i) => v < cost[b] ? i : b, 0);
+  for (let i = cands.length - 1; i >= 0; i--) {
+    const st = cands[i][at];
+    f0[i] = st ? fs / st[0] : 0;
+    at = back[i][at];
+  }
+  return { f0, rms };
+}
+
+const midOf = a => { const s = [...a].sort((p, q) => p - q); return s[s.length >> 1]; };
+/* 取出说话的那一段，换成相对中位数的半音。清音和气声没有基频，用前后插值补上，voiced 记下哪些帧是真的 */
+function pitchContour({ f0, rms }) {
+  const top = rms.reduce((m, v) => Math.max(m, v), 0);
+  if (top < .004) return null;
+  const on = rms.findIndex(v => v > top * .14);
+  let off = rms.length - 1;
+  while (off > on && rms[off] <= top * .14) off--;
+  if (off - on < 12) return null;
+  const raw = f0.slice(on, off + 1).map((v, i) => rms[on + i] > top * .08 ? v : 0);
+  const good = raw.filter(v => v > 0);
+  if (good.length < 6) return null;
+  const med = midOf(good);
+  /* 中位滤波去掉单帧跳变，超过一个八度的多半是倍频错误，折回来 */
+  const st = raw.map((v, i) => {
+    if (!v) return NaN;
+    const near = raw.slice(Math.max(0, i - 2), i + 3).filter(Boolean);
+    let s = 12 * Math.log2(midOf(near) / med);
+    if (s > 9) s -= 12; else if (s < -9) s += 12;
+    return s;
+  });
+  const voiced = st.map(v => !Number.isNaN(v));
+  const known = voiced.flatMap((v, i) => v ? [i] : []);
+  let p = 0;
+  const full = st.map((v, i) => {
+    if (voiced[i]) return v;
+    while (p + 1 < known.length && known[p + 1] < i) p++;
+    const a = known[p], b = known[p + 1];
+    if (i < a || b === undefined) return st[i < a ? a : known[known.length - 1]];
+    return st[a] + (st[b] - st[a]) * (i - a) / (b - a);
+  });
+  const smooth = full.map((_, i) => { const w = full.slice(Math.max(0, i - 2), i + 3); return w.reduce((s, v) => s + v, 0) / w.length; });
+  return { st: smooth, voiced, dur: (off - on) * .01, cover: good.length / raw.length };
+}
+const pitchSample = (a, m) => [...Array(m)].map((_, i) => {
+  const at = i * (a.length - 1) / (m - 1), l = Math.floor(at), r = Math.min(l + 1, a.length - 1);
+  return +a[l] + (+a[r] - +a[l]) * (at - l);
+});
+const pitchRange = c => { const s = [...c.st].sort((a, b) => a - b); return s[Math.floor(s.length * .92)] - s[Math.floor(s.length * .08)]; };
+
+/* 只有 PWA 能用麦克风，Claude 版的页面环境不给这个权限 */
+const MIR = { w: null, nat: {}, mine: null, pcm: null, sr: 0, state: "idle", note: "", run: 0, end: null };
+const canMirror = () => PWA && !!navigator.mediaDevices?.getUserMedia;
+const mirBtn = w => canMirror() && hasClip(w[1]) ? `<button class="chip" data-a="mirOpen" data-v="${esc(w[0])}|${esc(w[1])}">跟读</button>` : "";
+async function mirNative(text) {
+  if (MIR.nat[text]) return MIR.nat[text];
+  if (!window.CLIPS?.[text] && !await loadPack(CLIP_AT[text])) return null;
+  const b64 = window.CLIPS?.[text];
+  if (!b64) return null;
+  const buf = Uint8Array.from(atob(b64), c => c.charCodeAt(0)), au = await audioCtx().decodeAudioData(buf.buffer);
+  return MIR.nat[text] = pitchContour(pitchTrack(au.getChannelData(0), au.sampleRate));
+}
+/* 发车案内屏的样子：琥珀色是原声，绿色是你。两条线都以自己的平均音高为中线，男声女声可以直接对比 */
+function mirChart(w) {
+  const bs = beats(w[1].replace(/[〜\s]/g, "")), nat = MIR.nat[w[1]], W = 320, H = 136, ST = 6.2;
+  const path = c => {
+    const p = pitchSample(c.st, 72), m = p.reduce((s, v) => s + v, 0) / p.length;
+    return p.map((v, i) => `${(i / 71 * W).toFixed(1)},${Math.max(5, Math.min(H - 5, H / 2 - (v - m) * ST)).toFixed(1)}`).join(" ");
+  };
+  const cols = bs.slice(1).map((_, i) => `<line class="mir-col" x1="${(i + 1) / bs.length * W}" x2="${(i + 1) / bs.length * W}" y1="0" y2="${H}"/>`).join("");
+  return `<div class="mir-board" style="--n:${bs.length}"><div class="mir-key"><span class="k-nat">原声</span>${MIR.mine ? `<span class="k-you">你</span>` : ""}</div>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="原声${MIR.mine ? "和你的录音" : ""}的音高曲线">${cols}<line class="mir-mid" x1="0" x2="${W}" y1="${H / 2}" y2="${H / 2}"/>${nat ? `<polyline class="mir-nat" points="${path(nat)}"/>` : ""}${MIR.mine ? `<polyline class="mir-you" points="${path(MIR.mine)}"/>` : ""}</svg>
+    <div class="mir-beats" lang="ja">${bs.map(b => `<span>${b}</span>`).join("")}</div></div>`;
+}
+function mirNote() {
+  if (MIR.state === "err") return MIR.note;
+  if (MIR.state === "listen") return "先听原声。";
+  if (MIR.state === "rec") return "到你了，读完停一下，录音会自动结束。";
+  if (MIR.state !== "done" || !MIR.nat[MIR.w[1]]) return "先听一遍，再跟着读。图上是实际的音高，比声调线更细。录音只在这台设备上计算，不会保存。";
+  const you = pitchRange(MIR.mine), nat = pitchRange(MIR.nat[MIR.w[1]]), nums = `（你 ${you.toFixed(1)} 个半音，原声 ${nat.toFixed(1)} 个半音）`;
+  if (you < nat * .5) return `起伏比原声小很多${nums}。高的拍再抬高一点，低的拍放下来。`;
+  if (you > nat * 1.7) return `起伏比原声大${nums}，放松一点，读得平稳些。`;
+  return `起伏幅度和原声接近${nums}。再看两条线升降的位置是否一致，不用完全重合。`;
+}
+function mirRender() {
+  const el = document.getElementById("mirror"), w = MIR.w;
+  if (!el) return;
+  const st = MIR.state, busy = st === "listen" || st === "rec";
+  el.innerHTML = `<div class="sheet-bg" data-a="mirClose"></div><section class="sheet mir" role="dialog" aria-label="音高镜">
+    <div class="mir-top"><span class="mir-tag">音高镜</span><b lang="ja">${esc(w[0])}</b>${w[0] === w[1] ? "" : `<span lang="ja">${pitchText(w)}</span>`}</div>
+    ${mirChart(w)}
+    <p class="mir-msg" role="status">${mirNote()}</p>
+    ${st === "rec" ? `<div class="mir-level" aria-hidden="true"><u id="mir-lv"></u></div>` : ""}
+    <div class="mir-btns">
+      ${st === "rec" ? `<button class="btn" data-a="mirStop" data-primary>读完了</button>` : `<button class="btn" data-a="mirGo" ${busy ? "disabled" : ""} data-primary>${st === "done" ? "再读一次" : "听一遍，然后跟读"}</button>`}
+      <div class="mir-sub"><button class="chip" data-a="mirNat" ${busy ? "disabled" : ""}>听原声</button>${MIR.pcm ? `<button class="chip" data-a="mirMine" ${busy ? "disabled" : ""}>听我的</button>` : ""}</div>
+    </div>
+    <button class="sheet-x" data-a="mirClose" aria-label="关闭">×</button></section>`;
+}
+async function mirRecord(run) {
+  let stream;
+  const fail = text => { if (run !== MIR.run) return; MIR.state = "err"; MIR.note = text; mirRender(); };
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: true } });
+  } catch (e) {
+    return fail(e.name === "NotAllowedError" ? "麦克风没有打开。请在系统或浏览器设置里允许这个网站使用麦克风，再试一次。" : "这台设备没有可用的麦克风。");
+  }
+  const ctx = audioCtx();
+  await ctx.resume();
+  const src = ctx.createMediaStreamSource(stream), proc = ctx.createScriptProcessor(2048, 1, 1), mute = ctx.createGain(), sr = ctx.sampleRate;
+  const parts = [];
+  let floor = 0, frames = 0, heard = false, quiet = 0;
+  const end = () => {
+    if (MIR.end !== end) return;
+    MIR.end = null;
+    clearTimeout(limit);
+    proc.onaudioprocess = null;
+    src.disconnect(); proc.disconnect(); mute.disconnect();
+    stream.getTracks().forEach(t => t.stop());
+    if (run !== MIR.run) return;
+    const x = new Float32Array(parts.reduce((s, p) => s + p.length, 0));
+    let at = 0;
+    for (const p of parts) { x.set(p, at); at += p.length; }
+    const c = pitchContour(pitchTrack(x, sr));
+    if (!c) return fail("没听到清楚的声音。离麦克风近一点，再读一次。");
+    MIR.mine = c; MIR.pcm = x; MIR.sr = sr; MIR.state = "done";
+    mirRender();
+  };
+  MIR.end = end;
+  const limit = setTimeout(end, 5000);
+  mute.gain.value = 0;
+  proc.onaudioprocess = e => {
+    const d = new Float32Array(e.inputBuffer.getChannelData(0));
+    parts.push(d);
+    const e2 = Math.sqrt(d.reduce((s, v) => s + v * v, 0) / d.length);
+    /* 开头几帧估计环境噪声，说话声要明显高过它 */
+    if (frames++ < 6) floor = Math.max(floor, e2);
+    const on = e2 > Math.max(.012, floor * 3);
+    if (on) { heard = true; quiet = 0; } else if (heard) quiet += d.length / sr;
+    const lv = document.getElementById("mir-lv");
+    if (lv) lv.style.width = `${Math.min(100, e2 * 600)}%`;
+    if (heard && quiet > .55) end();
+  };
+  src.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
+  MIR.state = "rec";
+  mirRender();
+}
+Object.assign(ACT, {
+  async mirOpen(v) {
+    const [word, reading] = v.split("|");
+    stopSound();
+    MIR.run++;
+    Object.assign(MIR, { w: [word, reading], mine: null, pcm: null, state: "idle", note: "" });
+    let el = document.getElementById("mirror");
+    if (!el) { el = document.createElement("div"); el.id = "mirror"; document.body.append(el); }
+    mirRender();
+    await audioCtx()?.resume();
+    const c = await mirNative(reading).catch(() => null);
+    if (c) mirRender();
+  },
+  mirClose() {
+    MIR.run++;
+    MIR.end?.();
+    stopSound();
+    document.getElementById("mirror")?.remove();
+  },
+  mirGo() {
+    const run = ++MIR.run;
+    let started = false;
+    const go = () => { if (!started && run === MIR.run) { started = true; mirRecord(run); } };
+    Object.assign(MIR, { state: "listen", mine: null });
+    mirRender();
+    say(MIR.w[1], false, go);
+    setTimeout(go, 3500);
+  },
+  mirStop() { MIR.end?.(); },
+  mirNat() { say(MIR.w[1], false); },
+  mirMine() {
+    if (!MIR.pcm) return;
+    stopSound();
+    const ctx = audioCtx(), buf = ctx.createBuffer(1, MIR.pcm.length, MIR.sr), src = ctx.createBufferSource();
+    buf.copyToChannel(MIR.pcm, 0);
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    snd.src = src;
+    ctx.resume();
+    src.start();
+  },
 });
 /* ---------- 音效 ----------
    全部用 Web Audio 现场合成，不用音频文件，所以离线也能响。
@@ -3540,6 +3805,7 @@ function kHowView() {
       <p>高低发生在拍和拍之间，不在一拍里面升降。词卡上的红点读高，蓝点读低，最后的空心点是后面接的助词或な，动词和寒暄语后面没有这个点。词表里红线表示读高，竖线表示从这里降下来。</p>
       <div class="p-demo">${[["学校", "がっこう"], ["雨", "あめ"], ["先生", "せんせい"], ["山", "やま"]].map(w => pitchChart(w)).join("")}</div>
       ${crossList([["普", "普通话的四声在一个字里面升降，日语不是。读的时候每一拍都保持平的，只在拍和拍之间换高低。"], ["粤", "粤语的第 1 声（高平）和第 6 声（低平）很好用：高的拍读成第 1 声的高度，低的拍读成第 6 声的高度。"], ["英", "英语重音靠力度和长度，日语只靠音高。高的拍不要读得更重更长，每拍长度一样。"]])}
+      ${PWA ? `<p>词卡上的「跟读」会打开音高镜：先听原声，再录下你的跟读，把两条音高曲线叠在一起看。它只画音高，比较起伏幅度，不给对错打分，因为每个人的声音差别很大，自动判分现在做不到可靠。</p>` : ""}
       <p class="tiny">声调数据来自 Kanjium（CC BY-SA 4.0），是东京音的标准读法，一个词有时不止一种读法，这里选和录音一致的那种。</p>`)}
     ${sec("方法从哪来", `<p>这里综合了 Tofugu 的假名学习指南、MOJiKana 等应用的功能，以及中文网友在知乎、小红书上分享的经验：按行学、助记开路、听写和默写检验、错题单独记、每天少量坚持。「3 天速成」这类说法没有可靠依据，这里没有采用。助记和发音对照由我原创编写，三语对应是帮助记忆的近似说法，最终以朗读为准。</p>`)}
   </div>`;
@@ -3789,7 +4055,7 @@ function cardBack(st) {
   const w = n5Of(st.key), ex = w[4] ? [w[4], w[5]] : WEX[w[0]], tips = st.fresh ? readTips(w[1]) : [];
   return `<div class="read" lang="ja">${pitchText(w)}</div><div class="roma">${romaji(w[1])}</div><div class="mean">${esc(w[2])}</div>
     ${w[3] ? `<div class="fc-pos">${esc(POS_NOTE[w[3]] || w[3])}${w[6] ? ` · ます形 <span lang="ja">${w[6]}</span>` : ""}</div>` : ""}
-    <div class="card-btns center">${soundBtn(w[1])}<button class="chip" data-a="slow" data-v="${esc(w[1])}">慢速听</button></div>
+    <div class="card-btns center">${soundBtn(w[1])}<button class="chip" data-a="slow" data-v="${esc(w[1])}">慢速听</button>${mirBtn(w)}</div>
     ${tips.map(t => `<p class="tiny">${t}</p>`).join("")}
     ${ex ? exRow(ex) : ""}`;
 }
