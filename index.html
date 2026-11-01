@@ -796,6 +796,8 @@ svg .kbox { fill: var(--plate); }
 .mir-level u { display: block; width: 0; height: 100%; background: var(--line); }
 .mir-btns { display: grid; gap: 8px; }
 .mir-sub { display: flex; justify-content: center; gap: 8px; }
+.mel-again { justify-self: center; margin-top: 4px; }
+.slot.has[data-a] { cursor: pointer; }
 </style>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="ink"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.1 1.550"/><feComposite in="SourceGraphic" operator="in"/></filter></svg>
 <div id="app"></div>
@@ -2332,6 +2334,7 @@ const canHear = t => hasClip(t) || (tts.ok && !!tts.voice);
 const canListen = () => clipCount() > 0 || (tts.ok && !!tts.voice);
 function stopSound() {
   tts.turn++;
+  melodyStop();
   if (snd.el) { snd.el.onended = null; snd.el.pause(); }
   try { snd.src?.stop(); } catch {}
   snd.src = null;
@@ -2682,6 +2685,8 @@ function renderDone() {
     html = `<div class="arrive"><div class="press">${stampSvg(l, S.done[l.id].d)}</div><div class="big mid" lang="ja">${l.id === 30 ? "終点です" : "到着しました"}</div>
       <p>${l.id === 30 ? "你走完了全部 30 站，初级日语的骨架已经搭好。" : `第 ${l.id} 站完成。这一站的 ${l.words.length} 个词明天会进入复习。`}</p>
       <div class="result"><div><b>+${ses.xp}</b><span>里程</span></div><div><b>${acc}%</b><span>首次答对</span></div><div><b>${streak()}</b><span>连续天数</span></div></div></div>`;
+    if (!ses.melody) { ses.melody = true; melodyPlay(l.id, 900); }
+    html += `<button class="chip mel-again" data-a="melody" data-v="${l.id}">再听一遍发车旋律</button>`;
     buttons = `<button class="btn" data-a="leave" data-primary>回到今日</button>${next ? `<button class="btn ghost" data-a="lesson" data-v="${next.id}">再坐一站：${esc(next.zh)}</button>` : ""}`;
   } else {
     const more = dueKeys().length;
@@ -2789,7 +2794,7 @@ function bookView() {
     <section class="panel"><div class="eyebrow">打卡日历</div>${calendar()}</section>
     <section class="panel"><div class="eyebrow">成就 ${Object.keys(S.ba).length} / ${BADGES.length}</div>${badgeHtml()}</section>
     <section><div class="eyebrow" style="margin-bottom:10px">站台纪念章 ${Object.keys(S.done).length} / ${LESSONS.length}</div>
-    <div class="stamps">${LESSONS.map(l => S.done[l.id] ? `<div class="slot has">${stampSvg(l, S.done[l.id].d)}</div>` : `<div class="slot">${code(l.id)}</div>`).join("")}</div></section></div>
+    <div class="stamps">${LESSONS.map(l => S.done[l.id] ? `<div class="slot has" data-a="melody" data-v="${l.id}" role="button" tabindex="0" aria-label="听第 ${l.id} 站的发车旋律">${stampSvg(l, S.done[l.id].d)}</div>` : `<div class="slot">${code(l.id)}</div>`).join("")}</div></section></div>
     <div class="grid"><section class="panel"><div class="stats"><div><b>${streak()}</b><span>连续天数</span></div><div><b>${days}</b><span>学习天数</span></div><div><b>${words}</b><span>学过的词</span></div><div><b>${S.xp}</b><span>总里程 · ${l.n} 级</span></div></div></section>
     <section class="panel"><div class="eyebrow">N5 词汇掌握</div>${masteryBar()}</section>
     <section class="panel"><div class="eyebrow">顽固词</div>${stubbornList()}</section>
@@ -2851,7 +2856,7 @@ const ACT = {
   reset() { const epoch = (S.epoch || 0) + 1; S = { ...blank(), epoch }; clearT(); registerMy(); confirmReset = false; save(); render(); toast("进度已清空"); },
 };
 /* 这些操作有自己的声音或会朗读，不再叠加点击音 */
-const QUIET = new Set(["say", "slow", "mc", "check", "idk", "ngrade", "nflip", "kpeek", "kmt", "kspick", "playAll", "setSfx", "review", "lesson", "ncards", "gplay", "mirGo", "mirNat", "mirMine"]);
+const QUIET = new Set(["say", "slow", "mc", "check", "idk", "ngrade", "nflip", "kpeek", "kmt", "kspick", "playAll", "setSfx", "review", "lesson", "ncards", "gplay", "mirGo", "mirNat", "mirMine", "melody"]);
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-a]");
   if (!b || b.disabled) return;
@@ -3324,6 +3329,90 @@ const sfx = {
   slash: () => playSfx("slash"),
   levelUp: () => { playSfx("levelUp"); buzz([15, 30, 15, 30, 40]); },
 };
+/* ---------- 発車メロディ ----------
+   每站一段原创的发车旋律，到站时响一次，纪念章页点印章可以重听。全部现场合成，离线也能响。
+   每段是 [调, 速度, 音符]：数字是大调音级，8 是高八度的 do，- 是延长，. 是休止，一格一个八分音符。
+   声音跟着 S.set.sfx 走，关掉音效就不响 */
+const MELODY = [
+  ["C", 160, "1 3 5 8 - 5 3 5 8 - 10 - 8 - - -"],
+  ["G", 150, "5 3 5 6 5 3 1 2 3 - 5 - 8 - - -"],
+  ["F", 144, "8 - 7 6 5 - 6 7 8 - 10 9 8 - - -"],
+  ["D", 168, "3 4 5 - 3 4 5 - 6 7 8 - 5 - 8 -"],
+  ["A", 138, "5 - 8 - 7 - 5 - 6 - 8 - 10 - - -"],
+  ["C", 156, "1 5 3 5 4 6 5 - 3 5 4 6 5 8 - -"],
+  ["Eb", 148, "8 5 6 3 5 2 3 1 2 3 5 6 8 - - -"],
+  ["G", 164, ". 5 8 7 8 10 9 8 7 8 9 10 12 - - -"],
+  ["F", 132, "3 - 5 - 6 - 5 3 2 - 3 - 5 - 1 -"],
+  ["D", 152, "1 2 3 5 6 5 3 2 1 2 3 5 8 - - -"],
+  ["C", 170, "5 5 8 5 5 8 10 8 6 6 9 6 8 - - -"],
+  ["A", 140, "8 7 5 3 4 6 8 - 7 5 2 4 3 - 1 -"],
+  ["G", 158, "1 3 2 4 3 5 4 6 5 7 6 8 - - - -"],
+  ["F", 146, "10 - 9 8 7 8 9 - 8 - 7 6 5 - 8 -"],
+  ["Eb", 162, "5 6 5 8 5 6 5 10 9 8 7 8 - - - -"],
+  ["D", 136, "3 5 8 - 7 5 6 - 5 3 4 - 3 2 1 -"],
+  ["C", 152, "8 10 12 10 8 5 6 8 5 3 2 3 1 - - -"],
+  ["G", 172, "1 1 3 5 6 6 8 - 7 7 5 3 2 2 1 -"],
+  ["F", 142, "5 - 3 - 8 - 5 - 9 - 7 - 10 - - -"],
+  ["A", 154, "3 2 3 5 3 2 1 - 6 5 6 8 6 5 3 -"],
+  ["D", 166, "8 5 8 9 10 9 8 5 6 8 7 5 8 - - -"],
+  ["C", 138, "1 - 3 5 - 3 6 - 5 4 - 2 3 - 1 -"],
+  ["Eb", 150, "5 8 7 6 5 3 4 5 6 9 8 7 8 - - -"],
+  ["G", 158, "3 5 6 8 6 5 3 5 2 3 5 6 5 - - -"],
+  ["F", 168, "8 8 7 8 9 8 7 8 10 9 8 7 8 - 5 -"],
+  ["D", 144, "5 - 6 7 8 - 7 6 5 - 3 4 5 - 1 -"],
+  ["A", 134, "1 3 5 3 6 5 8 - 9 8 6 5 8 - - -"],
+  ["C", 160, "10 8 5 8 10 12 10 8 9 7 5 7 8 - - -"],
+  ["G", 146, "5 3 1 3 5 8 7 6 5 6 7 9 8 - - -"],
+  ["C", 126, "1 3 5 8 10 12 15 - 12 10 8 - 12 - 15 - - -"],
+];
+const MEL_ROOT = { C: 523.25, D: 587.33, Eb: 622.25, F: 349.23, G: 392, A: 440 };
+const MEL_STEP = [0, 2, 4, 5, 7, 9, 11];
+const melHz = (root, d) => root * 2 ** ((Math.floor((d - 1) / 7) * 12 + MEL_STEP[(d - 1) % 7]) / 12);
+/* 站台铃的音色：基音加两个衰减更快的高次分音 */
+function melBell(c, out, t, hz, peak, sec) {
+  [[1, 1, sec], [2.76, .24, sec * .4], [5.4, .08, sec * .2]].forEach(([r, a, d]) => tone(c, out, t, "sine", hz * r, hz * r, peak * a, d));
+}
+/* 搭建一段旋律，返回总秒数。测试时接到离线上下文里检查波形 */
+function melodyBuild(id, c, t, out) {
+  const [key, bpm, notes] = MELODY[id - 1], root = MEL_ROOT[key], step = 30 / bpm, cells = notes.split(" ");
+  const dly = c.createDelay(.6), back = c.createGain(), wet = c.createGain();
+  dly.delayTime.value = step * 1.5; back.gain.value = .26; wet.gain.value = .2;
+  dly.connect(back); back.connect(dly); dly.connect(wet); wet.connect(out);
+  const send = c.createGain();
+  send.connect(out); send.connect(dly);
+  cells.forEach((cell, i) => {
+    if (cell === "-" || cell === ".") return;
+    let len = 1;
+    while (cells[i + len] === "-") len++;
+    melBell(c, send, t + i * step, melHz(root, +cell), .15, Math.max(.45, len * step + .3));
+  });
+  /* 每两拍一个很轻的低音，让旋律站得住 */
+  for (let i = 0; i < cells.length; i += 4) melBell(c, send, t + i * step, root / 2 * (i % 8 ? 1.5 : 1), .05, step * 3.5);
+  return cells.length * step + 1.2;
+}
+const mel = { out: null, wait: 0 };
+function melodyStop() {
+  clearTimeout(mel.wait);
+  const o = mel.out, c = snd.ctx;
+  mel.out = null;
+  if (!o || !c) return;
+  o.gain.setTargetAtTime(0, c.currentTime, .03);
+  setTimeout(() => o.disconnect(), 300);
+}
+function melodyPlay(id, delay = 0) {
+  if (!S.set.sfx) return;
+  melodyStop();
+  mel.wait = setTimeout(() => {
+    const c = audioCtx();
+    if (!c) return;
+    c.resume?.();
+    const o = c.createGain();
+    o.connect(c.destination);
+    mel.out = o;
+    melodyBuild(id, c, c.currentTime + .02, o);
+  }, delay);
+}
+Object.assign(ACT, { melody(v) { melodyPlay(+v); } });
 /* ---------- 五十音：数据索引 ---------- */
 const K = { tab: "path", chart: "q", script: "h", hide: false, marking: false, peek: null, run: 0, playing: false, scope: "h" };
 const KI = {};
