@@ -18,17 +18,24 @@
 <script src="audio-w.js" async></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Klee+One:wght@600&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap">
 </head>
 <body>
 <style>
 /* 版式概念：一条环线电车。首页是站名牌，课程是一站，完成后盖站台纪念章。 */
 :root {
-  --paper: #f5f8f1; --plate: #ffffff; --ink: #17241c; --ink-2: #4f5e55; --ink-3: #84918a; --rule: #dbe3d8;
+  --paper: #f4f7f3; --plate: #ffffff; --ink: #17241c; --ink-2: #4a5a50; --ink-3: #7c8b82; --rule: #dbe3d8;
   --line: #80b918; --line-deep: #39740f; --line-soft: #e7f2d0; --on-deep: #ffffff;
   --stamp: #c8352b; --stamp-soft: #fbe6e2;
   --h1: #dcecc0; --h2: #a9d468; --h3: #6fa72a; --h4: #39740f; --on-h4: #ffffff;
   --u0: #c8352b; --u1: #24509a; --u2: #2c7a4b; --u3: #8a3a8f; --u4: #b06a00;
+  /* 蓝色圆珠笔和黄色荧光笔：注音用笔，常错的假名用荧光笔涂一下 */
+  --pen: #1c5fa8; --mark: #ffe97a;
+  /* 校园笔记本：白纸、淡蓝横线、左侧红色边线 */
+  --nb: #fdfefe; --nb-dot: #dfe8ef; --nb-rule: #cddfee; --nb-edge: #efb3ab; --nb-ink: #1b2a33; --stick: #fff4b8; --stick-ink: #3b3512;
+  /* 发车案内和车票：不随主题变化的实物颜色 */
+  --board: #0f1c17; --board-ink: #eef4ee; --board-dim: #8fa398; --led: #ffb52e; --led-ok: #7be09a;
+  --ticket: #e4f1dc; --ticket-dot: #bcd9ad; --ticket-ink: #20402a;
+  --r: 6px;
   --zh: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
   --ja: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
   --num: "Barlow Condensed", "DIN Alternate", "Arial Narrow", sans-serif;
@@ -41,6 +48,9 @@
     --stamp: #f0735f; --stamp-soft: #3a201c;
     --h1: #2a3d1c; --h2: #4d7a24; --h3: #7bb12f; --h4: #b5e05a; --on-h4: #10190c;
     --u0: #f0735f; --u1: #7fa8ee; --u2: #6cc792; --u3: #d08ad4; --u4: #e7ad4a;
+    --pen: #8cc6f7; --mark: #6a5a10;
+    --nb: #151c20; --nb-dot: #232f37; --nb-rule: #2a3843; --nb-edge: #6a3a35; --nb-ink: #e2eaef; --stick: #3a3516; --stick-ink: #f3ecc4;
+    --ticket: #1d2b1f; --ticket-dot: #2f4531; --ticket-ink: #d3e6d3;
     color-scheme: dark;
   }
 }
@@ -48,8 +58,11 @@
   --paper: #0f1512; --plate: #18211c; --ink: #e8efe8; --ink-2: #a9b6ae; --ink-3: #76847c; --rule: #2a352e;
   --line: #9bcb2c; --line-deep: #a9d83f; --line-soft: #222f18; --on-deep: #10190c;
   --stamp: #f0735f; --stamp-soft: #3a201c;
-    --h1: #2a3d1c; --h2: #4d7a24; --h3: #7bb12f; --h4: #b5e05a; --on-h4: #10190c;
+  --h1: #2a3d1c; --h2: #4d7a24; --h3: #7bb12f; --h4: #b5e05a; --on-h4: #10190c;
   --u0: #f0735f; --u1: #7fa8ee; --u2: #6cc792; --u3: #d08ad4; --u4: #e7ad4a;
+  --pen: #8cc6f7; --mark: #6a5a10;
+  --nb: #151c20; --nb-dot: #232f37; --nb-rule: #2a3843; --nb-edge: #6a3a35; --nb-ink: #e2eaef; --stick: #3a3516; --stick-ink: #f3ecc4;
+  --ticket: #1d2b1f; --ticket-dot: #2f4531; --ticket-ink: #d3e6d3;
   color-scheme: dark;
 }
 
@@ -69,17 +82,20 @@ h1, h2, h3, p { margin: 0; text-wrap: balance; }
 .top { display: flex; align-items: center; gap: 16px; padding-block: 4px 16px; }
 .brand { display: flex; align-items: center; gap: 8px; font-family: var(--ja); font-weight: 900; font-size: 18px; letter-spacing: .08em; }
 .brand i { width: 12px; height: 12px; border: 3px solid var(--line); border-radius: 50%; }
-.top-stats { margin-left: auto; display: flex; gap: 14px; color: var(--ink-2); font-size: 13px; }
-.top-stats b { font-family: var(--num); font-size: 20px; color: var(--ink); margin-right: 2px; font-weight: 600; }
+.top-stats { margin-left: auto; display: flex; align-items: baseline; gap: 12px; color: var(--ink-2); font-size: 13px; }
+.top-stats b { font-family: var(--num); font-size: 21px; color: var(--ink); margin-right: 1px; font-weight: 600; }
+.top-stats em { font-style: normal; }
+.fire svg { width: 15px; height: 15px; vertical-align: -1px; margin-right: 2px; color: var(--ink-3); }
+.fire.lit svg { color: var(--stamp); }
 
 .nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--plate); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: max(8px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px)); }
-.nav button { padding: 10px 0 12px; font-size: 12px; color: var(--ink-3); display: grid; justify-items: center; gap: 4px; }
-.nav button::before { content: ""; width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; }
+.nav button { position: relative; padding: 8px 0 7px; font-size: 11px; color: var(--ink-3); display: grid; justify-items: center; gap: 1px; }
+.nav svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .nav button[aria-current="page"] { color: var(--line-deep); font-weight: 600; }
-.nav button[aria-current="page"]::before { background: var(--line); border-color: var(--line); }
+.nav button[aria-current="page"]::before { content: ""; position: absolute; left: 22%; right: 22%; top: -1px; height: 3px; background: var(--line); }
 
 /* 站名牌 */
-.sign { background: var(--plate); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.sign { background: var(--plate); border: 1px solid var(--rule); border-radius: var(--r); overflow: hidden; }
 .sign-top { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 22px 20px 12px; }
 .code { display: grid; justify-items: center; width: 54px; height: 54px; border: 4px solid var(--line); border-radius: 6px; font-family: var(--num); font-weight: 600; line-height: 1; padding-top: 5px; background: var(--plate); }
 .code span { font-size: 13px; letter-spacing: .08em; }
@@ -87,10 +103,13 @@ h1, h2, h3, p { margin: 0; text-wrap: balance; }
 .sign-name { min-width: 0; text-align: center; }
 .sign-name h1 { font-family: var(--ja); font-weight: 900; font-size: clamp(30px, 8vw, 46px); letter-spacing: .1em; line-height: 1.2; overflow-wrap: anywhere; }
 .sign-name p { color: var(--ink-2); font-size: 14px; }
+.sign-name .sign-ro { font-family: var(--num); font-weight: 500; font-size: 15px; letter-spacing: .14em; text-transform: capitalize; color: var(--ink-2); line-height: 1.2; }
+.sign-cta { padding: 0 20px 18px; }
+.link { color: var(--line-deep); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
 .sign-band { position: relative; height: 16px; background: var(--line); }
 .sign-band::after { content: ""; position: absolute; left: 38%; right: 38%; top: 0; bottom: 0; background: var(--line-deep); }
 .sign-band i { position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px; background: var(--plate); z-index: 1; }
-.sign-foot { display: flex; justify-content: space-between; gap: 12px; padding: 8px 20px 12px; font-size: 13px; color: var(--ink-2); }
+.sign-foot { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: start; gap: 12px; padding: 8px 20px 12px; font-size: 13px; color: var(--ink-2); }
 .sign-foot span:last-child { text-align: right; }
 .sign-foot b { display: block; font-family: var(--ja); font-weight: 700; color: var(--ink); font-size: 14px; }
 .sound { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--rule); color: var(--line-deep); flex: none; background: var(--plate); }
@@ -101,7 +120,7 @@ h1, h2, h3, p { margin: 0; text-wrap: balance; }
 .grid > * { min-width: 0; }
 @media (min-width: 860px) { .grid.home { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: start; } }
 
-.panel { background: var(--plate); border: 1px solid var(--rule); border-radius: 4px; padding: 16px 18px; }
+.panel { background: var(--plate); border: 1px solid var(--rule); border-radius: var(--r); padding: 16px 18px; }
 .eyebrow { font-size: 12px; letter-spacing: .1em; color: var(--ink-3); }
 .plan { list-style: none; margin: 8px 0 14px; padding: 0; display: grid; }
 .plan li { border-top: 1px solid var(--rule); }
@@ -112,7 +131,7 @@ h1, h2, h3, p { margin: 0; text-wrap: balance; }
 .plan .on .dot { border-color: var(--line); }
 .plan .ok .dot { background: var(--line); border-color: var(--line); }
 .plan small { color: var(--ink-3); font-size: 13px; }
-.btn { display: block; width: 100%; padding: 14px 18px; background: var(--line-deep); color: var(--on-deep); font-weight: 700; font-size: 17px; border-radius: 4px; text-align: center; }
+.btn { display: block; width: 100%; padding: 14px 18px; background: var(--line-deep); color: var(--on-deep); font-weight: 700; font-size: 17px; border-radius: var(--r); text-align: center; }
 .btn:hover { filter: brightness(1.08); }
 .btn:disabled { background: var(--rule); color: var(--ink-3); cursor: default; filter: none; }
 .btn.ghost { background: none; color: var(--line-deep); border: 1px solid var(--rule); font-weight: 600; font-size: 15px; }
@@ -143,8 +162,8 @@ h1, h2, h3, p { margin: 0; text-wrap: balance; }
 
 /* 词本 */
 .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-.field { flex: 1 1 200px; min-width: 0; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 4px; background: var(--plate); }
-.chip { padding: 8px 12px; border: 1px solid var(--rule); border-radius: 4px; font-size: 14px; color: var(--ink-2); background: var(--plate); }
+.field { flex: 1 1 200px; min-width: 0; padding: 10px 12px; border: 1px solid var(--rule); border-radius: var(--r); background: var(--plate); }
+.chip { padding: 8px 12px; border: 1px solid var(--rule); border-radius: var(--r); font-size: 14px; color: var(--ink-2); background: var(--plate); }
 .chip[aria-pressed="true"] { background: var(--line-deep); border-color: var(--line-deep); color: var(--on-deep); }
 .wlist { display: grid; }
 @media (min-width: 760px) { .wlist { grid-template-columns: 1fr 1fr; column-gap: 28px; } }
@@ -182,7 +201,9 @@ details.g small { color: var(--ink-3); font-family: var(--zh); font-weight: 400;
 .panel .btn + .btn, .tutor .btn + .btn { margin-top: 8px; }
 .tutor { max-width: 680px; display: grid; gap: 12px; }
 .tutor > * { min-width: 0; }
-.tu-tabs { margin-bottom: 14px; }
+.tu-tabs { flex-wrap: nowrap; gap: 20px; margin-bottom: 14px; overflow-x: auto; border-bottom: 1px solid var(--rule); scrollbar-width: none; }
+.tu-tabs .chip { flex: none; padding: 8px 1px 9px; margin-bottom: -1px; font-size: 15px; color: var(--ink-3); background: none; border: 0; border-bottom: 2.5px solid transparent; border-radius: 0; }
+.tu-tabs .chip[aria-pressed="true"] { color: var(--ink); font-weight: 700; background: none; border-bottom-color: var(--line); }
 .chip:disabled { opacity: .55; cursor: default; }
 .chip.stop { justify-self: start; color: var(--stamp); border-color: var(--stamp); }
 .lead { color: var(--ink-2); font-size: 15px; text-wrap: pretty; }
@@ -210,7 +231,7 @@ details.g small { color: var(--ink-3); font-family: var(--zh); font-weight: 400;
 .fix b { font-family: var(--ja); font-weight: 700; font-size: 18px; line-height: 1.8; }
 .fix-l { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; }
 .fix .sound { width: 36px; height: 36px; }
-.hint { justify-self: start; max-width: 88%; text-align: left; padding: 8px 12px; border: 1px dashed var(--line-deep); border-radius: 4px; }
+.hint { justify-self: start; max-width: 88%; text-align: left; padding: 8px 12px; border: 1px dashed var(--line-deep); border-radius: var(--r); }
 .hint small { display: block; color: var(--ink-2); font-size: 13px; }
 .hint b { display: block; font-family: var(--ja); font-weight: 500; line-height: 1.8; }
 .composer { position: sticky; bottom: calc(61px + env(safe-area-inset-bottom, 0px)); padding-block: 8px; background: var(--paper); }
@@ -220,14 +241,14 @@ details.g small { color: var(--ink-3); font-family: var(--zh); font-weight: 400;
 .kf { font-family: var(--kf); font-weight: 600; font-style: normal; }
 .big .kf { font-weight: 600; }
 .lead.center { text-align: center; }
-@media (max-width: 859px) { .kpath > aside { order: -1; } }
+@media (max-width: 859px) { .kpath > aside, .n5v > aside { order: -1; } }
 .kbar { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 10px; align-items: center; margin-top: 8px; font-size: 14px; }
 .kbar div { height: 8px; background: var(--rule); }
 .kbar u { display: block; height: 100%; background: var(--line); }
 .kbar b { font-family: var(--num); font-size: 16px; font-weight: 600; }
 .kchart { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) 40px; gap: 5px; align-items: center; max-width: 560px; }
 .kchart .sound { width: 36px; height: 36px; justify-self: end; }
-.kc { display: grid; justify-items: center; align-content: center; min-height: 58px; padding: 3px 0; background: var(--plate); border: 1px solid var(--rule); border-radius: 4px; }
+.kc { display: grid; justify-items: center; align-content: center; min-height: 58px; padding: 3px 0; background: var(--plate); border: 1px solid var(--rule); border-radius: var(--r); }
 .kc .kf { font-size: 24px; line-height: 1.25; }
 .kc small { font-size: 12px; color: var(--ink-3); line-height: 1.1; }
 .kc.s1 { background: var(--stamp-soft); border-color: transparent; }
@@ -235,9 +256,16 @@ details.g small { color: var(--ink-3); font-family: var(--zh); font-weight: 400;
 .kc.s3 { background: var(--line); border-color: transparent; }
 .kc.s3 .kf, .kc.s3 small { color: #10190c; }
 .kc.play { outline: 3px solid var(--line-deep); outline-offset: 1px; }
+.kc.hot { box-shadow: inset 0 -5px 0 var(--mark); }
+.k-ctl { display: grid; gap: 8px; margin-bottom: 12px; max-width: 560px; }
+.k-tools { display: flex; gap: 18px; padding-inline: 2px; }
+.k-tools button { font-size: 14px; color: var(--ink-2); }
+.k-tools button[aria-pressed="true"] { color: var(--pen); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.k-tip { font-size: 13px; color: var(--ink-2); margin-bottom: 10px; }
+.k-mark { justify-self: start; }
 .kplays { display: grid; gap: 8px; }
 @media (min-width: 600px) { .kplays { grid-template-columns: 1fr 1fr; } }
-.kplay { display: block; padding: 12px 14px; text-align: left; background: var(--plate); border: 1px solid var(--rule); border-radius: 4px; }
+.kplay { display: block; padding: 12px 14px; text-align: left; background: var(--plate); border: 1px solid var(--rule); border-radius: var(--r); }
 .kplay:hover { border-color: var(--line); }
 .kplay.pen { border-left: 4px solid var(--line-deep); }
 .kplay b { display: block; font-size: 16px; }
@@ -252,17 +280,17 @@ details.g small { color: var(--ink-3); font-family: var(--zh); font-weight: 400;
 .ktable td { padding: 8px 0; font-size: 15px; border-top: 1px solid var(--rule); }
 .ktable small { display: block; color: var(--ink-2); font-size: 13px; }
 .kyue { display: flex; flex-wrap: wrap; gap: 6px; }
-.kyue span { display: grid; justify-items: center; min-width: 58px; padding: 6px 8px; background: var(--plate); border: 1px solid var(--rule); border-radius: 4px; }
+.kyue span { display: grid; justify-items: center; min-width: 58px; padding: 6px 8px; background: var(--plate); border: 1px solid var(--rule); border-radius: var(--r); }
 .kyue b { font-size: 20px; font-family: var(--zh); }
 .kyue small { font-family: var(--num); font-size: 14px; color: var(--ink-2); }
 .kyue i { font-size: 16px; color: var(--line-deep); }
 .cross { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 8px; align-items: start; padding-block: 3px; }
 .cross p { text-wrap: pretty; font-size: 15px; }
-.lang { display: grid; place-items: center; width: 24px; height: 24px; margin-top: 1px; font-size: 12px; font-weight: 700; color: var(--on-deep); background: var(--line-deep); border-radius: 4px; }
+.lang { display: grid; place-items: center; width: 24px; height: 24px; margin-top: 1px; font-size: 12px; font-weight: 700; color: var(--on-deep); background: var(--line-deep); border-radius: var(--r); }
 .krow-top { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .kname { font-family: var(--kf); font-weight: 600; font-size: 34px; }
 .krow-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
-.krow-list button, .kyoon button, .kgrid-c button { display: grid; justify-items: center; min-width: 58px; padding: 6px 8px; background: var(--plate); border: 1px solid var(--rule); border-radius: 4px; }
+.krow-list button, .kyoon button, .kgrid-c button { display: grid; justify-items: center; min-width: 58px; padding: 6px 8px; background: var(--plate); border: 1px solid var(--rule); border-radius: var(--r); }
 .krow-list .kf, .kyoon .kf, .kgrid-c .kf { font-size: 30px; line-height: 1.3; }
 .krow-list small, .kyoon small, .kgrid-c small { color: var(--ink-3); font-size: 13px; }
 .krow-list.conf .kf { font-size: 46px; }
@@ -287,7 +315,7 @@ svg .kbox { fill: var(--plate); }
 .kn text { fill: #fff; font-family: var(--num); font-size: 6px; font-weight: 600; text-anchor: middle; }
 .mn { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; align-items: center; }
 .mn-em { font-size: 34px; line-height: 1; text-align: center; }
-.trap { padding: 8px 10px; font-size: 14px; background: var(--stamp-soft); border-radius: 4px; }
+.trap { padding: 8px 10px; font-size: 14px; background: var(--stamp-soft); border-radius: var(--r); }
 .pad { display: grid; grid-template-columns: minmax(0, 240px) minmax(0, 1fr); gap: 12px; align-items: start; }
 .pad-box { position: relative; aspect-ratio: 1; }
 .pad-box svg, .pad-box canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -306,8 +334,8 @@ svg .kbox { fill: var(--plate); }
 .kmatch .tile.bad { border-color: var(--stamp); background: var(--stamp-soft); }
 .krecall { display: grid; grid-template-columns: 24px repeat(5, minmax(0, 1fr)); gap: 4px; align-items: center; text-align: center; font-size: 13px; color: var(--ink-3); }
 .krecall b { font-family: var(--num); font-weight: 600; }
-.krecall .blank { height: 34px; border: 1px dashed var(--rule); border-radius: 4px; }
-.krecall button { height: 34px; background: var(--plate); border: 1px solid var(--rule); border-radius: 4px; color: var(--ink); }
+.krecall .blank { height: 34px; border: 1px dashed var(--rule); border-radius: var(--r); }
+.krecall button { height: 34px; background: var(--plate); border: 1px solid var(--rule); border-radius: var(--r); color: var(--ink); }
 .krecall .kf { font-size: 20px; }
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .card-btns.center { justify-content: center; }
@@ -317,9 +345,10 @@ svg .kbox { fill: var(--plate); }
 
 /* 课程 */
 .ses { position: fixed; inset: 0; z-index: 10; background: var(--paper); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding-top: env(safe-area-inset-top, 0px); }
-.ses-head { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 10px; align-items: center; padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(12px, env(safe-area-inset-left, 0px)); max-width: 680px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+.ses-head { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(12px, env(safe-area-inset-left, 0px)); max-width: 680px; width: 100%; margin: 0 auto; box-sizing: border-box; }
 .x { width: 40px; height: 40px; font-size: 22px; color: var(--ink-2); line-height: 1; }
 .track { position: relative; height: 6px; background: var(--rule); margin-right: 26px; }
+.ro-btn { font-size: 12px; color: var(--pen); padding: 6px 8px; border: 1px solid var(--rule); border-radius: var(--r); white-space: nowrap; }
 .track u { position: absolute; left: 0; top: 0; bottom: 0; background: var(--line); transition: width .3s; }
 .track svg { position: absolute; top: -12px; width: 30px; height: 18px; margin-left: -4px; color: var(--line-deep); transition: left .3s; }
 .ses-body { overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -341,13 +370,14 @@ svg .kbox { fill: var(--plate); }
 .card .mean { font-size: 20px; }
 .card .roma { font-family: var(--num); font-size: 18px; letter-spacing: .06em; color: var(--ink-3); }
 .card-btns { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
-.learn { display: grid; gap: 6px; padding: 14px 16px; background: var(--plate); border: 1px solid var(--rule); border-radius: 4px; }
+.learn { display: grid; gap: 6px; padding: 14px 16px; background: var(--plate); border: 1px solid var(--rule); border-radius: var(--r); }
 .learn p { text-wrap: pretty; font-size: 15px; }
 .learn .eyebrow:not(:first-child) { margin-top: 8px; }
 .learn .li { position: relative; padding-left: 14px; color: var(--ink-2); }
 .learn .li::before { content: ""; position: absolute; left: 2px; top: .68em; width: 5px; height: 5px; border-radius: 50%; background: var(--line); }
 .beats { display: flex; flex-wrap: wrap; gap: 4px; }
-.beats span { min-width: 38px; padding: 4px 6px; text-align: center; font-size: 20px; font-weight: 700; background: var(--line-soft); border-radius: 4px; }
+.beats span { display: grid; justify-items: center; min-width: 38px; padding: 4px 6px; font-size: 20px; font-weight: 700; line-height: 1.3; background: var(--line-soft); border-radius: var(--r); }
+.beats i { font-family: var(--num); font-style: normal; font-weight: 500; font-size: 13px; line-height: 1; color: var(--pen); min-height: 13px; }
 .ask, .idk { justify-self: center; padding: 8px 12px; font-size: 15px; color: var(--line-deep); text-decoration: underline; text-underline-offset: 3px; }
 .idk { color: var(--ink-2); }
 .teach { padding-inline: 2px; }
@@ -362,7 +392,7 @@ svg .kbox { fill: var(--plate); }
 .q.jp { font-family: var(--ja); font-size: 24px; font-weight: 700; }
 .opts { display: grid; gap: 8px; }
 .opts.two { grid-template-columns: 1fr 1fr; }
-.opt { padding: 12px 14px; min-height: 54px; border: 1.5px solid var(--rule); border-radius: 4px; background: var(--plate); text-align: left; font-size: 18px; line-height: 1.6; display: flex; align-items: center; gap: 10px; min-width: 0; overflow-wrap: anywhere; }
+.opt { padding: 12px 14px; min-height: 54px; border: 1.5px solid var(--rule); border-radius: var(--r); background: var(--plate); text-align: left; font-size: 18px; line-height: 1.6; display: flex; align-items: center; gap: 10px; min-width: 0; overflow-wrap: anywhere; }
 .opt kbd { font-family: var(--num); font-size: 13px; color: var(--ink-3); flex: none; }
 .opt:hover:enabled { border-color: var(--line); }
 .opt.right { border-color: var(--line-deep); background: var(--line-soft); }
@@ -371,15 +401,15 @@ svg .kbox { fill: var(--plate); }
 .opt .ja { font-weight: 500; }
 .tray { min-height: 66px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; padding-block: 8px; border-bottom: 2px solid var(--rule); }
 .bank { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding-top: 8px; }
-.tile { padding: 8px 12px; min-height: 44px; border: 1.5px solid var(--rule); border-bottom-width: 3px; border-radius: 4px; background: var(--plate); font-family: var(--ja); font-size: 18px; font-weight: 500; line-height: 1.7; }
+.tile { padding: 8px 12px; min-height: 44px; border: 1.5px solid var(--rule); border-bottom-width: 3px; border-radius: var(--r); background: var(--plate); font-family: var(--ja); font-size: 18px; font-weight: 500; line-height: 1.7; }
 .tile:disabled { visibility: hidden; }
 .listen { justify-self: center; width: 84px; height: 84px; }
 .listen svg { width: 34px; height: 34px; }
 .talk { display: grid; gap: 10px; }
-.bub { max-width: 88%; justify-self: start; text-align: left; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 4px; background: var(--plate); }
+.bub { max-width: 88%; justify-self: start; text-align: left; padding: 8px 12px; border: 1px solid var(--rule); border-radius: var(--r); background: var(--plate); }
 .bub.me { justify-self: end; background: var(--line-soft); border-color: transparent; }
 .bub.play { outline: 2px solid var(--line); }
-.bub span { font-size: 12px; color: var(--ink-3); display: block; }
+.bub > span { font-size: 12px; color: var(--ink-3); display: block; }
 .bub b { font-family: var(--ja); font-weight: 500; font-size: 18px; line-height: 1.8; display: block; }
 .bub small { font-size: 14px; color: var(--ink-2); }
 .arrive { text-align: center; display: grid; gap: 10px; justify-items: center; padding-block: 16px; }
@@ -396,28 +426,28 @@ svg .kbox { fill: var(--plate); }
 .result b { display: block; font-family: var(--num); font-size: 30px; font-weight: 600; line-height: 1.1; }
 .result span { font-size: 13px; color: var(--ink-2); }
 .modal { position: absolute; inset: 0; background: color-mix(in srgb, var(--ink) 40%, transparent); display: grid; place-items: center; padding: 16px; z-index: 2; }
-.modal > div { background: var(--plate); border-radius: 4px; padding: 20px; width: min(340px, 100%); display: grid; gap: 10px; }
-.toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 8px 14px; border-radius: 4px; font-size: 14px; z-index: 20; max-width: calc(100vw - 32px); }
+.modal > div { background: var(--plate); border-radius: var(--r); padding: 20px; width: min(340px, 100%); display: grid; gap: 10px; }
+.toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 8px 14px; border-radius: var(--r); font-size: 14px; z-index: 20; max-width: calc(100vw - 32px); }
 
 @media (min-width: 760px) {
-  .nav { position: static; display: flex; gap: 4px; background: none; border: 0; padding: 0; }
-  .nav button { padding: 6px 12px; font-size: 15px; display: block; }
-  .nav button::before { display: none; }
-  .nav button[aria-current="page"] { background: var(--line-soft); border-radius: 4px; }
+  .nav { position: static; display: flex; gap: 2px; background: none; border: 0; padding: 0; margin-left: auto; }
+  .nav button { padding: 6px 12px; font-size: 15px; display: flex; align-items: center; gap: 6px; border-radius: var(--r); }
+  .nav svg { width: 20px; height: 20px; }
+  .nav button[aria-current="page"] { background: var(--line-soft); }
+  .nav button[aria-current="page"]::before { display: none; }
   .top-stats { margin-left: 0; order: 3; }
   .shell { padding-bottom: 32px; }
-  .nav { margin-left: auto; }
   .toast { bottom: 24px; }
 }
 
 /* 个人条 */
-.me { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; background: var(--plate); border: 1px solid var(--rule); border-radius: 4px; padding: 14px 16px; }
+.me { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; background: var(--plate); border: 1px solid var(--rule); border-radius: var(--r); padding: 14px 16px; }
 .me-av { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--line-soft); color: var(--line-deep); font-family: var(--ja); font-weight: 900; font-size: 22px; }
 .me-top { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; }
 .me-top b { font-size: 17px; overflow-wrap: anywhere; }
 .me-top > span { font-size: 13px; color: var(--ink-2); }
-.me-bar { height: 8px; margin-block: 6px 4px; border-radius: 4px; background: var(--rule); overflow: hidden; }
-.me-bar u { display: block; height: 100%; border-radius: 4px; background: var(--line); transition: width .4s; }
+.me-bar { height: 8px; margin-block: 6px 4px; border-radius: var(--r); background: var(--rule); overflow: hidden; }
+.me-bar u { display: block; height: 100%; border-radius: var(--r); background: var(--line); transition: width .4s; }
 .me-main small { font-size: 12px; color: var(--ink-3); }
 .me-fire { display: grid; justify-items: center; color: var(--ink-3); line-height: 1.1; }
 .me-fire svg { width: 24px; height: 24px; }
@@ -427,7 +457,7 @@ svg .kbox { fill: var(--plate); }
 
 /* 三条学习线 */
 .entries { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.entry { display: grid; align-content: start; gap: 2px; padding: 12px; text-align: left; background: var(--plate); border: 1px solid var(--rule); border-radius: 4px; transition: transform .12s, border-color .12s; }
+.entry { display: grid; align-content: start; gap: 2px; padding: 12px; text-align: left; background: var(--plate); border: 1px solid var(--rule); border-radius: var(--r); transition: transform .12s, border-color .12s; }
 .entry:hover { border-color: var(--line); }
 .entry:active { transform: scale(.96); }
 .e-mark { font-size: 30px; font-weight: 900; line-height: 1.2; color: var(--line-deep); }
@@ -443,7 +473,7 @@ svg .kbox { fill: var(--plate); }
 .ck-n { display: block; font-size: 22px; line-height: 1.3; }
 .ck p { font-size: 14px; color: var(--ink-2); text-wrap: pretty; }
 .heat { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-top: 14px; }
-.hc { display: block; aspect-ratio: 1; border-radius: 4px; background: var(--paper); border: 1px solid var(--rule); }
+.hc { display: block; aspect-ratio: 1; border-radius: var(--r); background: var(--paper); border: 1px solid var(--rule); }
 .hc.h1 { background: var(--h1); border-color: transparent; }
 .hc.h2 { background: var(--h2); border-color: transparent; }
 .hc.h3 { background: var(--h3); border-color: transparent; }
@@ -457,7 +487,7 @@ svg .kbox { fill: var(--plate); }
 .wod-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; margin-block: 6px; }
 .wod-row b { display: block; font-family: var(--ja); font-size: 26px; line-height: 1.5; }
 .wod-row small { color: var(--ink-2); }
-.gain { display: grid; gap: 6px; width: 100%; margin-top: 16px; padding: 12px 14px; background: var(--line-soft); border-radius: 4px; text-align: left; }
+.gain { display: grid; gap: 6px; width: 100%; margin-top: 16px; padding: 12px 14px; background: var(--line-soft); border-radius: var(--r); text-align: left; }
 .gain p { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; font-size: 15px; text-wrap: pretty; }
 .gain b { color: var(--line-deep); }
 
@@ -489,14 +519,14 @@ svg .kbox { fill: var(--plate); }
 .ses-body { overflow-x: hidden; }
 
 /* 语法闯关 */
-.g-form { margin-top: 8px; padding: 8px 10px; background: var(--line-soft); border-radius: 4px; font-size: 15px; font-weight: 700; }
+.g-form { margin-top: 8px; padding: 8px 10px; background: var(--line-soft); border-radius: var(--r); font-size: 15px; font-weight: 700; }
 .stars { display: inline-flex; gap: 2px; vertical-align: middle; }
 .stars i { width: 14px; height: 14px; background: var(--rule); clip-path: polygon(50% 0, 62% 35%, 100% 38%, 70% 60%, 80% 98%, 50% 76%, 20% 98%, 30% 60%, 0 38%, 38% 35%); }
 .stars i.on { background: var(--u4); }
 .arrive .stars i { width: 28px; height: 28px; }
 
 /* 掌握度 */
-.mbar { display: flex; gap: 2px; height: 14px; margin-top: 10px; border-radius: 4px; overflow: hidden; }
+.mbar { display: flex; gap: 2px; height: 14px; margin-top: 10px; border-radius: var(--r); overflow: hidden; }
 .mbar i { display: block; min-width: 4px; }
 .m-good { background: var(--h4); }
 .m-doing { background: var(--h2); }
@@ -515,7 +545,7 @@ svg .kbox { fill: var(--plate); }
 .cal-d.fz { background: none; border: 2px dashed var(--line); color: var(--ink); }
 .cal-d.now { outline: 2px solid var(--ink-2); outline-offset: 1px; }
 .badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; margin-top: 8px; }
-.badge { padding: 10px; border: 1px dashed var(--rule); border-radius: 4px; color: var(--ink-3); }
+.badge { padding: 10px; border: 1px dashed var(--rule); border-radius: var(--r); color: var(--ink-3); }
 .badge.got { border: 1px solid var(--stamp); background: var(--stamp-soft); color: var(--ink); }
 .badge b { display: block; font-size: 14px; }
 .badge small { font-size: 12px; }
@@ -527,10 +557,177 @@ svg .kbox { fill: var(--plate); }
 .kc em { font-style: normal; font-size: 14px; line-height: 1.1; color: var(--ink-2); }
 .kc.s3 em { color: #10190c; }
 .kchart.both .kc { min-height: 68px; }
-@media (max-width: 859px) { .home-side { order: -1; } }
 @media (prefers-reduced-motion: reduce) {
   .fc-in, .entry, .me-bar u, .ring .v { transition: none; }
   .fc.fly-l, .fc.fly-r, .fc.fly-d { animation-duration: .01s; }
+}
+
+/* 注音：蓝色圆珠笔写在假名下面 */
+*, *::before, *::after { box-sizing: border-box; }
+.u { display: inline-flex; flex-direction: column; align-items: center; vertical-align: baseline; }
+.u .g { display: block; }
+.u > i { font-family: var(--num); font-style: normal; font-weight: 500; font-size: max(.56em, 11px); line-height: 1; letter-spacing: .01em; color: var(--pen); margin-top: -.1em; }
+.u.hot .g { background: linear-gradient(transparent 60%, var(--mark) 60%); }
+.u[data-a] { cursor: pointer; }
+.u[data-a]:hover .g { text-decoration: underline dotted var(--pen); text-underline-offset: 3px; }
+.big .u > i { font-size: .34em; margin-top: 0; }
+.st-ro { font-family: var(--num); letter-spacing: .04em; }
+
+/* 分段选择 */
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px; padding: 2px; background: var(--rule); border-radius: var(--r); }
+.seg button { padding: 8px 6px; font-size: 14px; color: var(--ink-2); border-radius: 4px; }
+.seg button[aria-pressed="true"] { background: var(--plate); color: var(--ink); font-weight: 600; }
+.set-col { display: grid; gap: 8px; justify-content: stretch; }
+
+/* 假名小卡 */
+.sheet-bg { position: fixed; inset: 0; z-index: 29; background: color-mix(in srgb, var(--ink) 45%, transparent); }
+.sheet { position: fixed; left: 50%; bottom: 0; z-index: 30; transform: translateX(-50%); display: grid; gap: 12px; width: min(560px, 100%); max-height: 86dvh; overflow-y: auto; padding: 20px max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: var(--plate); border-radius: 14px 14px 0 0; }
+.sheet-top { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding-right: 30px; }
+.sheet-g { display: grid; place-items: center; width: 76px; height: 76px; font-size: 52px; line-height: 1; background-color: var(--nb); background-image: linear-gradient(var(--nb-rule), var(--nb-rule)), linear-gradient(var(--nb-rule), var(--nb-rule)); background-size: 100% 1px, 1px 100%; background-position: center; background-repeat: no-repeat; border: 1px solid var(--nb-rule); }
+.sheet-ro b { display: block; font-family: var(--num); font-size: 34px; font-weight: 600; line-height: 1; color: var(--pen); }
+.sheet-ro small { color: var(--ink-3); font-size: 13px; }
+.sheet-pic { font-size: 15px; text-wrap: pretty; }
+.sheet-note { font-size: 13px; color: var(--ink-3); margin-bottom: -8px; }
+.sheet textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--r); background: var(--paper); color: var(--pen); font: inherit; resize: vertical; }
+.sheet-x { position: absolute; right: 10px; top: 10px; width: 36px; height: 36px; font-size: 22px; color: var(--ink-3); }
+
+/* 发车案内：车站的出发显示屏 */
+.board { background: var(--board); color: var(--board-ink); border-radius: var(--r); overflow: hidden; }
+.board header { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 14px 8px; border-bottom: 1px solid color-mix(in srgb, var(--board-ink) 16%, transparent); }
+.board header b { font-family: var(--ja); font-weight: 700; font-size: 15px; letter-spacing: .24em; }
+.board header span { font-size: 12px; color: var(--board-dim); letter-spacing: .1em; }
+.board ul { list-style: none; margin: 0; padding: 0; }
+.board li + li { border-top: 1px solid color-mix(in srgb, var(--board-ink) 9%, transparent); }
+.board li button { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; padding: 10px 14px; color: inherit; text-align: left; }
+.board li button:hover:enabled { background: color-mix(in srgb, var(--board-ink) 6%, transparent); }
+.board li button:disabled { cursor: default; }
+.b-k { padding: 2px 0; font-size: 12px; font-weight: 700; text-align: center; border-radius: 3px; color: var(--board); background: var(--board-ink); }
+.b-k.b0 { background: #ffb52e; }
+.b-k.b1 { background: #ff8f6b; }
+.b-k.b2 { background: #9ad64a; }
+.b-k.b3 { background: #6fc3f2; }
+.b-k.b4 { background: #d9b2f2; }
+.b-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
+.b-s { font-family: var(--num); font-size: 17px; font-weight: 500; letter-spacing: .02em; color: var(--led); font-variant-numeric: tabular-nums; }
+.board li:not(.on):not(.ok) .b-s { color: var(--board-dim); }
+.board li.ok .b-s { color: var(--led-ok); }
+.board li.ok .b-t, .board li.ok .b-k { opacity: .55; }
+
+/* 今日要记：做成一张车票，左上角切角 */
+.memo { display: grid; gap: 8px; width: 100%; padding: 14px 16px; text-align: left; color: var(--ticket-ink); background-color: var(--ticket); background-image: radial-gradient(circle at 1px 1px, var(--ticket-dot) 1px, transparent 1.3px); background-size: 7px 7px; clip-path: polygon(16px 0, 100% 0, 100% 100%, 0 100%, 0 16px); border-radius: 0 var(--r) var(--r) var(--r); transition: transform .12s; }
+.memo:active { transform: scale(.98); }
+.memo-top { display: flex; justify-content: space-between; align-items: baseline; }
+.memo-top b { font-size: 17px; letter-spacing: .06em; }
+.memo-top small { font-family: var(--num); font-size: 19px; font-weight: 600; }
+.memo-list { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; font-size: 16px; font-weight: 700; }
+.memo-list .kf { font-size: 22px; font-weight: 600; }
+.memo-go { font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+
+/* 打卡里的等级 */
+.ck-lv { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; margin-top: 12px; font-size: 13px; color: var(--ink-2); }
+.ck-lv .me-bar { margin: 0; }
+.ck-lv small { color: var(--ink-3); font-size: 12px; }
+
+/* 笔记本 */
+.nb { display: grid; color: var(--nb-ink); background-color: var(--nb); background-image: radial-gradient(circle at 1px 1px, var(--nb-dot) .8px, transparent 1px); background-size: 18px 18px; border: 1px solid var(--rule); border-radius: var(--r); box-shadow: 0 1px 1px color-mix(in srgb, var(--ink) 6%, transparent), 0 10px 26px -14px color-mix(in srgb, var(--ink) 30%, transparent); overflow: hidden; }
+.nb-page { display: grid; align-content: start; gap: 22px; min-width: 0; padding: 18px 16px 22px; }
+.nb-head { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: end; padding-bottom: 12px; border-bottom: 2px solid var(--nb-ink); }
+.nb-title h1 { font-family: var(--ja); font-weight: 900; font-size: 26px; letter-spacing: .08em; line-height: 1.2; }
+.nb-title p { font-size: 13px; color: var(--ink-2); }
+.nb-no { display: grid; gap: 4px; justify-items: end; font-family: var(--num); font-size: 13px; letter-spacing: .04em; color: var(--ink-2); }
+.nb-no span { display: flex; align-items: baseline; gap: 6px; }
+.nb-no b { min-width: 34px; font-size: 19px; font-weight: 500; text-align: center; color: var(--pen); border-bottom: 1px solid var(--nb-rule); font-variant-numeric: tabular-nums; }
+.nb-no .nb-w { min-width: 0; font-family: var(--ja); font-size: 14px; border: 0; }
+.nb-stamp { position: absolute; right: 86px; top: -2px; display: grid; place-items: center; width: 46px; height: 46px; color: var(--stamp); border: 2px solid currentColor; border-radius: 50%; font-family: var(--ja); font-weight: 900; font-size: 22px; transform: rotate(-12deg); opacity: .82; }
+.nb-sec { display: grid; gap: 10px; min-width: 0; }
+.nb-sec h2 { display: flex; align-items: baseline; gap: 8px; font-size: 15px; font-weight: 700; }
+.nb-sec h2 span { padding: 0 4px; background: linear-gradient(transparent 56%, color-mix(in srgb, var(--line) 42%, transparent) 56%); }
+.nb-sec h2 small { font-weight: 400; color: var(--ink-3); font-size: 13px; }
+.nb-none { font-size: 14px; color: var(--ink-3); }
+.pen { color: var(--pen); }
+.nks { display: grid; gap: 12px; }
+.nk { display: grid; grid-template-columns: 62px minmax(0, 1fr) 26px; gap: 12px; align-items: start; }
+.nk-g { display: grid; place-items: center; width: 62px; height: 62px; font-size: 40px; line-height: 1; color: var(--nb-ink); background-color: var(--nb); background-image: linear-gradient(var(--nb-rule), var(--nb-rule)), linear-gradient(var(--nb-rule), var(--nb-rule)); background-size: 100% 1px, 1px 100%; background-position: center; background-repeat: no-repeat; border: 1px solid var(--nb-edge); }
+.nk-t { min-width: 0; }
+.nk-t b { display: block; font-family: var(--num); font-size: 21px; font-weight: 600; line-height: 1.1; }
+.nk-t p { font-size: 13px; line-height: 1.5; color: var(--ink-2); text-wrap: pretty; }
+.nk-t p.pen { color: var(--pen); }
+.tick { position: relative; width: 26px; height: 26px; border: 1.5px solid var(--nb-rule); border-radius: 50%; background: var(--nb); flex: none; }
+.tick[aria-checked="true"] { border-color: var(--pen); }
+.tick[aria-checked="true"]::after { content: ""; position: absolute; left: 7px; top: 2px; width: 8px; height: 15px; border: solid var(--pen); border-width: 0 2.5px 2.5px 0; transform: rotate(40deg); }
+.nk.ok .nk-g, .nk.ok .nk-t, .nw.ok .nw-m, .nw.ok .nw-z { opacity: .45; }
+.nws { display: grid; }
+.nw { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; padding-block: 8px; border-top: 1px solid var(--nb-rule); }
+.nw:last-child { border-bottom: 1px solid var(--nb-rule); }
+.nw-m { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; min-width: 0; }
+.nw-m b { font-family: var(--ja); font-weight: 700; font-size: 18px; line-height: 1.7; }
+.nw-m > span { font-family: var(--num); font-size: 15px; letter-spacing: .02em; }
+.nw-z { grid-column: 2; grid-row: 2; font-size: 14px; color: var(--ink-2); }
+.nw-a { grid-column: 3; grid-row: 1 / 3; display: flex; align-items: center; gap: 4px; }
+.nw-a .sound { width: 34px; height: 34px; background: none; border: 0; }
+.pencil { width: 30px; height: 30px; color: var(--ink-3); display: grid; place-items: center; }
+.pencil svg { width: 19px; height: 19px; }
+.pencil.has { color: var(--pen); }
+.nw-note, .nw-in { grid-column: 2 / -1; font-size: 14px; }
+.nw-in { width: 100%; padding: 6px 8px; color: var(--pen); background: transparent; border: 0; border-bottom: 1.5px solid var(--pen); border-radius: 0; }
+.nw-in:focus-visible { outline: none; }
+.stick { display: grid; gap: 4px; padding: 14px; color: var(--stick-ink); background: var(--stick); box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 16%, transparent); }
+.stick-top { display: flex; justify-content: space-between; gap: 10px; align-items: start; }
+.stick small { font-size: 12px; opacity: .75; }
+.stick h3 { font-family: var(--ja); font-weight: 900; font-size: 21px; line-height: 1.5; }
+.stick-m { font-weight: 700; font-size: 15px; }
+.stick-f { font-size: 13px; opacity: .85; }
+.stick .ex { border-top: 1px dashed color-mix(in srgb, var(--stick-ink) 30%, transparent); margin-top: 6px; }
+.stick .ex small { color: inherit; opacity: .8; }
+.stick rt { color: inherit; }
+.stick .sound { background: transparent; border-color: color-mix(in srgb, var(--stick-ink) 30%, transparent); color: inherit; }
+.stick .link { justify-self: start; color: inherit; }
+.stick .tick { background: transparent; border-color: color-mix(in srgb, var(--stick-ink) 40%, transparent); }
+.lined { --lh: 32px; padding-left: 34px; background-color: var(--nb); background-image: linear-gradient(90deg, transparent 26px, var(--nb-edge) 26px, var(--nb-edge) 27px, transparent 27px), repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--lh) - 1px), var(--nb-rule) calc(var(--lh) - 1px), var(--nb-rule) var(--lh)); }
+.lined textarea { display: block; width: 100%; min-height: calc(var(--lh) * 8); padding: 0 4px; border: 0; color: var(--pen); background: transparent; font-family: var(--kf), var(--zh); font-size: 16px; line-height: var(--lh); resize: none; overflow: hidden; }
+.lined textarea:focus-visible { outline: none; }
+.lined textarea::placeholder { color: var(--ink-3); }
+.hots { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; }
+.hots button { display: grid; justify-items: center; padding: 4px 0; background: var(--nb); border: 1px solid var(--nb-rule); }
+.hots .kf { font-size: 22px; line-height: 1.25; }
+.hots i { font-family: var(--num); font-style: normal; font-size: 12px; line-height: 1.1; color: var(--pen); }
+.nb-days { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 2px; }
+.nb-days button { position: relative; flex: none; display: grid; justify-items: center; min-width: 46px; padding: 4px 8px; color: var(--ink-2); background: var(--plate); border: 1px solid var(--rule); border-radius: var(--r); }
+.nb-days b { font-family: var(--num); font-size: 19px; font-weight: 600; line-height: 1.1; }
+.nb-days small { font-size: 11px; }
+.nb-days i { position: absolute; right: 5px; top: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--pen); }
+.nb-days button[aria-pressed="true"] { color: var(--on-deep); background: var(--line-deep); border-color: var(--line-deep); }
+.nb-foot { margin-top: 12px; }
+@media (min-width: 860px) {
+  .nb { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); background-image: linear-gradient(90deg, transparent calc(50% - 26px), color-mix(in srgb, var(--ink) 7%, transparent) 50%, transparent calc(50% + 26px)), radial-gradient(circle at 1px 1px, var(--nb-dot) .8px, transparent 1px); background-size: 100% 100%, 18px 18px; }
+  .nb-page { padding: 24px 30px 30px; }
+  .nk-t p { font-size: 13px; }
+}
+
+/* 打印：只留手写单 */
+#print { display: none; }
+@media print {
+  @page { size: A4; margin: 11mm 12mm; }
+  body { background: #fff; color: #111; font-size: 11pt; }
+  #app, #ses, #peek, .toast { display: none !important; }
+  #print { display: block; }
+  #print section { break-inside: avoid; margin-top: 6mm; }
+  #print h1 { font-family: var(--ja); font-size: 15pt; font-weight: 900; letter-spacing: .08em; }
+  #print h2 { font-size: 10.500pt; font-weight: 700; margin-bottom: 2mm; }
+  .p-head { display: flex; justify-content: space-between; align-items: end; padding-bottom: 2mm; border-bottom: .6mm solid #111; }
+  .p-no { font-family: var(--num); font-size: 11pt; }
+  .p-row { display: flex; align-items: center; margin-bottom: 1mm; }
+  .p-ro { width: 9mm; font-family: var(--num); font-size: 11pt; color: #1c5fa8; }
+  .pc { display: grid; place-items: center; width: 15.500mm; height: 15.500mm; margin-left: -.2mm; font-family: var(--kf); font-size: 28pt; font-weight: 600; line-height: 1; border: .2mm solid #999; background-image: linear-gradient(#ccc, #ccc), linear-gradient(#ccc, #ccc); background-size: 100% .1mm, .1mm 100%; background-position: center; background-repeat: no-repeat; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .pc.t { color: #d4d4d4; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .p-t { width: 100%; border-collapse: collapse; }
+  .p-t td { padding: 1.4mm 2mm 1.4mm 0; border-bottom: .2mm solid #999; vertical-align: bottom; font-size: 10pt; }
+  .p-t small { font-family: var(--num); font-size: 10pt; color: #1c5fa8; }
+  .p-w { width: 24mm; font-family: var(--ja); font-size: 13pt; font-weight: 700; }
+  .p-line { width: 72mm; }
+  .p-f { font-size: 10pt; color: #444; }
+  .p-lines { height: 24mm; margin-top: 2mm; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 7.900mm, #999 7.900mm, #999 8mm); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .p-note { white-space: pre-wrap; font-size: 10.500pt; }
 }
 </style>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="ink"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.1 1.550"/><feComposite in="SourceGraphic" operator="in"/></filter></svg>
@@ -539,6 +736,10 @@ svg .kbox { fill: var(--plate); }
 <script>
 document.documentElement.lang = "zh-CN";
 const PWA = true;
+const fontLink = document.createElement("link");
+fontLink.rel = "stylesheet";
+fontLink.href = "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Klee+One:wght@600&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap";
+document.head.append(fontLink);
 /* 录音索引，由 gen_audio.js 生成 */
 const AUDIO = {"voice":"Nanami + Keita","clips":["audio-g.js","audio-k.js","audio-l.js","audio-n.js","audio-w.js"],"slow":["slow-k.js","slow-l.js","slow-w.js"],"at":[["私は会社員です。","山田さんは医者です。","学生ですか。","はい、学生です。","あなたは学生ですか。","先生ですか。はい、先生です。","私の本です。","大学の友達です。","これは私のかばんです。","日本語の本を買います。","これは田中さんの傘です。","私の友達は学生です。","これは私の傘です。","あれは駅です。","そのかばんは高いです。","パンを食べます。","友達に手紙を書きます。","明日、行きます。","昨日、行きました。","肉を食べません。","昨日、勉強しませんでした。","昨日、映画を見ました。","今朝、朝ご飯を食べませんでした。","昨日、テレビを見ませんでした。","日曜日に友達に会います。","九時に会社へ行きます。","月曜日に大学へ来ます。","バスで学校へ行きます。","レストランで昼ご飯を食べます。","ペンで名前を書きます。","パンと牛乳を買います。","父と母は元気です。","友達と京都へ行きます。","家族と旅行します。","コーヒーとケーキをください。","ビールも飲みます。","王さんは学生です。私も学生です。","パンを食べます。ご飯も食べます。","田中さんも来ます。","私も日本語が好きです。","公園に子供がいます。","駅の前に銀行があります。","教室に学生がいます。","冷蔵庫に牛乳があります。","今日は寒くないです。","昨日は暑かったです。","このコーヒーはおいしくないです。","この映画は面白かったです。","今日は忙しくないです。","この町は便利じゃありません。","きれいな花です。","静かな町です。","昨日は暇でした。","ここは有名な店です。","先生は親切でした。","私は猫が好きです。","私は音楽が好きです。","私は魚が嫌いです。","妹はピアノが上手です。","日本へ行きたいです。","今日は働きたくないです。","水を飲みたいです。","映画を見たいです。","新しい車を買いたいです。","はい、見ましょう。","ちょっと休みましょう。","一緒に昼ご飯を食べませんか。","行きませんか。はい、行きましょう。","一緒にコーヒーを飲みませんか。","もう帰りましょう。","日本語を教えてください。","今、本を読んでいます。","友達と話しています。","はい、いいですよ。","ここで写真を撮ってはいけません。","ここに座ってもいいですか。","図書館で話してはいけません。","雨ですから、行きません。","忙しいですから、休みません。","どうして来ませんか。","暑いですから、窓を開けます。","どうして休みますか。風邪ですから。","おいしいですから、たくさん食べます。"],["あ","い","う","え","お","あ、い、う、え、お。","か","き","く","け","こ","か、き、く、け、こ。","さ","し","す","せ","そ","さ、し、す、せ、そ。","た","ち","つ","て","と","た、ち、つ、て、と。","な","に","ぬ","ね","の","な、に、ぬ、ね、の。","は","ひ","ふ","へ","ほ","は、ひ、ふ、へ、ほ。","ま","み","む","め","も","ま、み、む、め、も。","や","ゆ","よ","や、ゆ、よ。","ら","り","る","れ","ろ","ら、り、る、れ、ろ。","わ","を","ん","わ、を、ん。","が","ぎ","ぐ","げ","ご","が、ぎ、ぐ、げ、ご。","ざ","じ","ず","ぜ","ぞ","ざ、じ、ず、ぜ、ぞ。","だ","ぢ","づ","で","ど","だ、ぢ、づ、で、ど。","ば","び","ぶ","べ","ぼ","ば、び、ぶ、べ、ぼ。","ぱ","ぴ","ぷ","ぺ","ぽ","ぱ、ぴ、ぷ、ぺ、ぽ。","きゃ","きゅ","きょ","きゃ、きゅ、きょ。","しゃ","しゅ","しょ","しゃ、しゅ、しょ。","ちゃ","ちゅ","ちょ","ちゃ、ちゅ、ちょ。","にゃ","にゅ","にょ","にゃ、にゅ、にょ。","ひゃ","ひゅ","ひょ","ひゃ、ひゅ、ひょ。","みゃ","みゅ","みょ","みゃ、みゅ、みょ。","りゃ","りゅ","りょ","りゃ、りゅ、りょ。","ぎゃ","ぎゅ","ぎょ","ぎゃ、ぎゅ、ぎょ。","じゃ","じゅ","じょ","じゃ、じゅ、じょ。","びゃ","びゅ","びょ","びゃ、びゅ、びょ。","ぴゃ","ぴゅ","ぴょ","ぴゃ、ぴゅ、ぴょ。","がっこう","きって","おかあさん","とうきょう","せんせい","あい","いえ","うえ","あお","いい","おい","かお","あか","えき","こえ","いけ","きく","くうき","さけ","しお","すし","あさ","うそ","せかい","すき","たこ","ちかい","つき","とけい","くつ","した","なつ","にく","いぬ","ねこ","あなた","さかな","きのこ","はな","ひと","ふね","へた","ほし","はこ","ふたつ","まち","みみ","むし","もも","うみ","さしみ","あたま","やま","ゆき","よむ","へや","ゆめ","やすみ","さくら","よる","くるま","ふろ","れきし","からい","ろく","わたし","かわ","にわ","ほん","にほん","おんな","えん","がくせい","かぞく","でんわ","ぶた","ごはん","かばん","みず","かき","かぎ","てんき","でんき","さんぽ","えんぴつ","ぴかぴか","ぽかぽか","ぺらぺら","きょう","しゃしん","おちゃ","りょこう","びょういん","ひゃく","じゅぎょう","びよういん","ざっし","おばあさん","おとうさん","きて","おばさん","おじいさん","おじさん","ウエア","エア","アイ","ケーキ","ココア","カカオ","キウイ","アイス","ソース","ケース","コース","キス","タクシー","テスト","トースト","スーツ","ツアー","テニス","ネクタイ","ノート","ナイス","カヌー","コーヒー","ハート","ヒーター","ヘア","ハーフ","メモ","マスク","ミニ","チーム","ハム","タイヤ","ヨーヨー","ユーモア","カメラ","ホテル","ルール","クラス","トイレ","ワイン","レモン","メロン","ハワイ","バス","ビール","テレビ","ゲーム","ドア","ボール","サラダ","パン","ピアノ","ペン","シャツ","ジュース","ニュース","メニュー","シャワー","チケット","クッキー","カップ","パーティー","カフェ","チーズ","ベッド","ベド","カード","カド","ビル"],["こんにちは","終点です。","次は、はつおん、はつおん。","学生","電話","今日","写真","百","学校","切手","雑誌","お母さん","東京","私は学生です。","東京へ行きます。","次は、あいさつ、あいさつ。","どうもありがとうございます。","おはようございます。","田中さん、おはようございます。","王さん、おはようございます。","ありがとうございます。さようなら。","さようなら。","こんにちは。","こんばんは。","すみません。","すみません、トイレは？","次は、はじめまして、はじめまして。","田中さんは先生です。","王さんは中国人です。","私は王です。","はじめまして。王です。","はじめまして。田中です。","私は中国人です。学生です。","私は会社員です。どうぞよろしくお願いします。","こちらこそ、よろしくお願いします。","田中さん","王さん","どうぞよろしくお願いします。","次は、ですか、ですか。","田中さんは学生ですか。","私は医者じゃありません。","いいえ、エンジニアです。","王さんは学生ですか。","いいえ、学生じゃありません。","はい、そうです。","田中さんは銀行員ですか。","いいえ、銀行員じゃありません。エンジニアです。","王さんは？","そうですか。","田中さんは医者ですか。","はい、医者です。","次は、わたしの、わたしの。","田中さんは私の友達です。","私の名前は王です。","私も学生です。","日本語の先生","田中さんは会社員です。私も会社員です。","中国の友達","お名前は？","王です。さくら大学の学生です。","こちらは私の友達の山田さんです。","はじめまして。私も学生です。","私の友達です。","日本語の先生です。","さくら大学の学生です。","田中さんは学生です。私も学生です。","次は、かず、かず。","電話番号は何番ですか。","にじゅうさん","さんじゅうろく","王さん、電話番号は何番ですか。","ゼロきゅうゼロの、いちにさんよんの、ごろくななはちです。","ありがとうございます。","十五","二十","四十八","ゼロきゅうゼロの、いちにさんよんです。","次は、これ、これ。","これは本です。","それは何ですか。","あれは私の傘です。","あれは何ですか。","これは何ですか。","それは日本の雑誌です。","あれも雑誌ですか。","いいえ、あれは本です。","それは私の傘です。","あれは雑誌です。","次は、この、この。","この本は私のです。","あの人は誰ですか。","その時計は田中さんのです。","この車は田中さんのです。","この傘は誰のですか。","私のです。","あの車も王さんのですか。","いいえ、あれは先生のです。","その時計は高いです。","田中さんのです。","次は、ここ、ここ。","トイレはどこですか。","駅はあそこです。","ここは教室です。","すみません、駅はどこですか。","トイレはあそこです。","すみません、トイレはどこですか。","トイレですか。あそこです。","いいえ。","次は、いくら、いくら。","このパンはいくらですか。","コーヒーをください。","これは三百円です。","さんびゃく","これをください。","この本はいくらですか。","すみません、このパンはいくらですか。","百五十円です。","コーヒーは？","三百円です。","じゃ、パンとコーヒーをください。","ありがとうございます。四百五十円です。","三百円","八百円","一万円","パンとコーヒーをください。","次は、なんじ、なんじ。","今何時ですか。","今九時半です。","午後三時です。","よじ","くじ","じゅっぷん","すみません、今何時ですか。","午後三時十分です。","四時","七時","九時半","一分","三分","五分","十分","次は、ようび、ようび。","今日は金曜日です。","明日は何曜日ですか。","休みは日曜日です。","会社は九時から五時までです。","九時から五時までです。","今日は何曜日ですか。","金曜日です。","明日は休みですか。","はい、休みです。","いいですね。","月曜日","水曜日","土曜日","銀行は九時から三時までです。","休みは土曜日から日曜日までです。","次は、いきます、いきます。","明日東京へ行きます。","田中さんは家へ帰ります。","電車で会社へ行きます。","電車で行きます。","明日、どこへ行きますか。","田中さん、明日どこへ行きますか。","電車で行きますか。","いいえ、バスで行きます。","家へ帰ります。","日本へ来ます。","バスで帰ります。","歩いて行きます。","次は、たべます、たべます。","ご飯を食べます。","水を飲みます。","映画を見ます。","何を読みますか。","音楽を聞きます。","映画を見ます","王さん、毎日何を飲みますか。","コーヒーを飲みます。","音楽を聞きますか。","はい、毎日聞きます。","何を食べますか。","次は、どこで、どこで。","スーパーでパンを買います。","図書館で勉強します。","部屋で手紙を書きます。","図書館へ行きます。","友達と映画を見ます。","明日どこで勉強しますか。","私も図書館へ行きます。","そうですか。じゃ、また明日。","田中さんと東京へ行きます。","次は、あさ、あさ。","六時に起きます。","十一時ごろ寝ます。","九時から五時まで働きます。","七時に起きます。","毎日何時に寝ますか。","王さんは毎朝何時に起きますか。","夜は何時ごろ寝ますか。","十二時ごろ寝ます。","日曜日に働きます。","毎日働きます。","次は、きのう、きのう。","昨日映画を見ました。","今朝何も食べませんでした。","週末どこへも行きませんでした。","先週友達に会いました。","昨日コーヒーを飲みました。","昨日は勉強しませんでした。","週末どこへ行きましたか。","どこへも行きませんでした。家で休みました。","何をしましたか。","映画を見ました。","食べます","食べません","食べました","食べませんでした","何も食べませんでした。","どこへも行きませんでした。","友達に会いました。","次は、いっしょに、いっしょに。","一緒にお茶を飲みませんか。","公園へ行きましょう。","昼ご飯を食べましょう。","一緒に映画を見ませんか。","明日はちょっと…。","いいですね。行きましょう。","田中さん、明日一緒に公園へ行きませんか。","昼ご飯も一緒に食べませんか。","ええ、食べましょう。","一緒に行きませんか。","お茶を飲みませんか。","すみません、明日はちょっと…。","次は、あります、あります。","机の上に本があります。","部屋に猫がいます。","家の前に犬がいます。","田中さんは教室にいます。","机の上に猫がいます。","部屋に本があります。","教室に先生がいます。","田中さん、私の傘はどこにありますか。","机の下にありますよ。","あ、ありました。","あ、猫もいますよ。","駅はあそこにあります。","次は、いくつ、いくつ。","りんごを三つください。","家族は四人です。","部屋に学生が二人います。","りんごを二つください。","よにん","いらっしゃいませ。","このりんごはいくらですか。","一つ百円です。","じゃ、三つください。","ありがとうございます。三百円です。","りんごを一つください。","いくつありますか。","学生は二人います。","りんごを三つ買います。","次は、おおきい、おおきい。","この時計は高いです。","今日は暑くないです。","おいしいパンです。","この本は高くないです。","大きい車です。","今日は寒いです。","このりんごはおいしいですね。","そうですね。高いですか。","いいえ、高くないです。安いです。","このパンはおいしいです。","高くないです。","大きくないです。","よくないです。","新しい本","大きい車","次は、しずか、しずか。","この町は静かです。","田中さんは親切な人です。","ここは便利じゃありません。","きれいな町です。","ここは静かじゃありません。","親切な人","王さん、お元気ですか。","はい、元気です。","王さんの町はどんな町ですか。","静かな町です。とてもきれいです。","田中さんは親切です。","静かな町","きれいな人","有名な先生","次は、たのしい、たのしい。","旅行はとても楽しかったです。","テストは難しかったです。","昨日はいい天気でした。","日本語はあまり難しくないです。","昨日は寒かったです。","あまりおいしくないです。","テストは簡単でした。","旅行はどうでしたか。","とても楽しかったです。","天気はどうでしたか。","あまりよくなかったです。でも、ご飯はおいしかったです。","とても楽しいです。","あまり難しくないです。","楽しかったです。","寒くなかったです。","よかったです。","簡単でした。","いい天気でした。","次は、すき、すき。","私は魚が好きです。","王さんは料理が上手です。","どんな音楽が好きですか。","私は肉が好きです。","王さんは歌が上手です。","どんなスポーツが好きですか。","王さんはどんな料理が好きですか。","日本の料理が好きです。魚が好きです。","料理は上手ですか。","いいえ、下手です。","魚が好きです。","肉が嫌いです。","私は歌が下手です。","次は、ほしい、ほしい。","新しい靴が欲しいです。","京都へ行きたいです。","寿司を食べたいです。","新しいカメラが欲しいです。","行きたいです","コーヒーを飲みたいです。","今、何が欲しいですか。","カメラですか。","はい。京都で写真を撮りたいです。","カメラが欲しいです。","写真を撮りたいです。","次は、どうして、どうして。","今日は忙しいですから、行きません。","風邪ですから、休みます。","どうして日本語を勉強しますか。","風邪ですから。","忙しいですから、行きません。","今晩、一緒にご飯を食べませんか。","すみません、今晩はちょっと…。","どうしてですか。","明日テストがありますから。","そうですか。大変ですね。","どうして休みましたか。","時間がありませんから、タクシーで行きます。","次は、てください、てください。","ちょっと待ってください。","ゆっくり話してください。","ここに座ってください。","もう一度言ってください。","書いて","飲んで","行って","食べて","すみません、もう一度言ってください。","はい。ゆっくり話しますね。","ここに名前を書いてください。","はい、わかりました。","行きます・飲みます","食べます・見ます","します・来ます","見ます → 見て","勉強します → 勉強して","書きます → 書いて","待ちます → 待って","飲みます → 飲んで","話します → 話して","待ってください。","次は、しています、しています。","今雨が降っています。","東京に住んでいます。","田中さんは料理を作っています。","今、音楽を聞いています。","知りません","もしもし、王さん、今何をしていますか。","部屋で日本語を勉強しています。","外は雨が降っていますか。","はい、降っています。","今、ご飯を食べています。","雨が降っています。","カメラを持っています。","田中さんを知っています。","次は、いいですか、いいですか。","窓を開けてもいいですか。","ここで写真を撮ってもいいですか。","ここでたばこを吸ってはいけません。","このペンを使ってもいいですか。","すみません、このペンを使ってもいいですか。","はい、どうぞ。","すみません、ちょっと寒いです。","次は、しゅうてん、しゅうてん。","私は中国から来ました。","毎日日本語を勉強しています。","これからも頑張ります。","中国から来ました。","はじめまして。王です。中国から来ました。","今、東京に住んでいます。さくら大学の学生です。","毎日日本語を勉強しています。とても楽しいです。","来週、京都へ行きたいです。","これからも頑張ります。どうぞよろしくお願いします。","毎朝コーヒーを飲みます。","日本語は楽しいです。"],["学校へ行きます。","切手を買います。","お母さんは元気です。","病院はどこですか。","美容院へ行きます。","おやすみなさい。また明日。","田中さんは日本人です。","今、一時です。","今、二時です。","今、三時です。","四ページです。","今、五時です。","今、六時です。","七ページです。","今、八時です。","九ページです。","今、十時です。","鞄を買います。","新聞を読みます。","百円です。","千円です。","一万円です。","五百円です。","お金がありません。","五分待ちます。","二時半です。","午前九時に起きます。","月曜日に学校へ行きます。","この店は安いです。","朝ご飯を食べます。","友達に会います。","昼ご飯を食べます。","飲み物は何がいいですか。","鞄の中に本があります。","りんごを四つください。","りんごを五つください。","一人で行きます。","何人いますか。","この家は大きいです。","小さい猫です。","この本は古いです。","今日は暑いです。","この店は有名です。","明日は暇です。","日本語は難しいです。","スポーツが好きです。","自転車で行きます。","温泉に入ります。","写真を撮ります。","ここで待ちます。","ありがとうと言います。","ここに座ります。","日本語を教えます。","雨が降ります。","東京に住みます。","鞄を持ちます。","ニュースで知ります。","ご飯を作ります。","ペンを使います。","窓を開けます。","ドアを閉めます。","たばこを吸います。","ここで写真は駄目です。","勉強を始めます。","仕事が終わります。","日本語の勉強を続けます。","あなたの名前は何ですか。","あの人は先生です。","あの男の人は誰ですか。","女の人が二人います。","子供が公園にいます。","父は会社員です。","母は料理が上手です。","兄は大学生です。","姉は東京に住んでいます。","弟はサッカーが好きです。","妹は猫が好きです。","先生はとても親切です。","私は大学の学生です。","兄は医者です。","毎朝七時に起きます。","昼にうどんを食べます。","今晩は家にいます。","今、何時ですか。","明日、学校へ行きます。","昨日は雨でした。","今年、日本へ行きます。","来年、大学に入ります。","去年、京都へ行きました。","今月は忙しいです。","来月、友達が来ます。","先月、車を買いました。","今週はテストがあります。","来週の月曜日に会いましょう。","先週は休みでした。","毎日、日本語を勉強します。","毎週、プールへ行きます。","午前九時に始まります。","午後は図書館へ行きます。","今日は時間がありません。","春は桜がきれいです。","夏は海へ行きます。","秋は涼しいです。","冬はとても寒いです。","誕生日はいつですか。","学校は八時に始まります。","駅はどこですか。","銀行は駅の前にあります。","病院へ行きます。","郵便局で切手を買います。","図書館で本を読みます。","公園を散歩します。","あの店は安いです。","私の家は駅から近いです。","部屋に机があります。","お国はどちらですか。","この道をまっすぐ行ってください。","海で泳ぎます。","日本で一番高い山は富士山です。","町に大きい川があります。","今日は空が青いです。","外国へ旅行します。","喫茶店でコーヒーを飲みます。","大学の食堂は安いです。","交番で道を聞きます。","一緒にご飯を食べましょう。","毎日、朝ご飯を食べます。","晩ご飯は何を食べますか。","肉と野菜を買います。","野菜をたくさん食べます。","どんな果物が好きですか。","卵を二つください。","朝はパンを食べます。","牛乳を飲みます。","水をください。","お茶をどうぞ。","コーヒーを一杯ください。","お酒は飲みません。","お菓子を作ります。","日本の料理はおいしいです。","この本は面白いです。","父は毎朝新聞を読みます。","雑誌を買いました。","辞書で調べます。","ノートに名前を書きます。","鉛筆で書いてください。","ペンを貸してください。","この鞄は高いです。","傘を持って行きます。","新しい時計が欲しいです。","眼鏡をかけています。","友達に電話します。","夜、テレビを見ます。","ここで写真を撮りましょう。","椅子に座ってください。","窓を開けてください。","ドアを閉めてください。","新しい服を買いました。","ここで靴を脱いでください。","赤い帽子をかぶっています。","駅で切符を買います。","車で会社へ行きます。","自転車で学校へ来ました。","電車は速いです。","地下鉄に乗ります。","飛行機で日本へ行きます。","頭が痛いです。","妹は目が大きいです。","猫の耳は小さいです。","口を開けてください。","手を洗います。","足が痛いです。","お腹が空きました。","北海道は雪が多いです。","今日は風が強いです。","今日はいい天気ですね。","明日、東京へ行きます。","友達が家へ来ます。","六時に家へ帰ります。","お茶を飲みます。","本を読みます。","手紙を書きます。","日本語で話します。","スーパーで野菜を買います。","駅で友達に会います。","ここで待ってください。","毎朝六時に起きます。","十一時に寝ます。","駅まで歩きます。","公園を走ります。","プールで泳ぎます。","ここに立ってください。","どうぞ、座ってください。","部屋に入ります。","七時に家を出ます。","先生にピアノを習います。","銀行で働いています。","今日は家で休みます。","このペンを使ってください。","母が晩ご飯を作ります。","車を持っています。","塩を取ってください。","服を洗います。","白いシャツを着ます。","靴を脱ぎます。","バスに乗ります。","次の駅で降ります。","大阪に住んでいます。","その人を知っています。","日本語が少し分かります。","傘を忘れました。","新しい言葉を覚えます。","週末はテニスをします。","大きい犬がいます。","小さい家です。","このカメラは高いです。","あの山は低いです。","この川は長いです。","夏休みは短いです。","新しい車です。","この建物は古いです。","東京の夏は暑いです。","今朝は寒いです。","このお茶は熱いです。","冷たい水を飲みます。","今週は忙しいです。","旅行は楽しいです。","漢字は難しいです。","この問題は易しいです。","このケーキはおいしいです。","この映画は面白いです。","朝が早いです。","新幹線は速いです。","このバスは遅いです。","駅は近いです。","学校は遠いです。","この町は人が多いです。","今日は宿題が少ないです。","これはいい本です。","今日は天気が悪いです。","白い花がきれいです。","黒い靴を買います。","赤いりんごを食べます。","青い海を見ます。","私は日本語が好きです。","野菜が嫌いです。","田中さんは歌が上手です。","私は料理が下手です。","お元気ですか。","図書館は静かです。","この町は賑やかです。","この部屋はきれいです。","京都は有名です。","店の人は親切です。","地下鉄は便利です。","今日は暇です。","大丈夫ですか。","今日はとても暑いです。","日本語を少し話します。","本をたくさん読みます。","もう昼ご飯を食べました。","まだ十時です。","いつも七時に起きます。","時々映画を見ます。","よく公園へ行きます。","何を飲みますか。","いつ日本へ行きますか。","これはいくらですか。","あなたの傘はどれですか。","どの人が先生ですか。"],["がこう","おはようございます","こんばんは","ありがとうございます","すみません","さようなら","おやすみなさい","ちゅうごくじん","にほんじん","かいしゃいん","さん","はい","いいえ","そうです","いしゃ","ぎんこういん","エンジニア","だれ","ともだち","だいがく","にほんご","なまえ","かいしゃ","いち","よん","なな","はち","きゅう","じゅう","でんわばんごう","これ","それ","あれ","かさ","なん","この","その","あの","しんぶん","ここ","そこ","あそこ","どこ","きょうしつ","せん","まん","いくら","おかね","いま","なんじ","ふん","はん","ごぜん","ごご","あした","きのう","まいにち","なんようび","げつようび","きんようび","にちようび","いきます","きます","かえります","でんしゃ","あるいて","うち","らいしゅう","たべます","のみます","みます","よみます","ききます","えいが","おんがく","かいます","かきます","べんきょうします","てがみ","みせ","としょかん","スーパー","おきます","ねます","はたらきます","ひる","まいあさ","します","せんしゅう","けさ","しゅうまつ","なにも","どこへも","あいます","やすみます","いっしょに","ひるごはん","こうえん","のみもの","ちょっと","いいですね","あります","います","なか","まえ","つくえ","ひとつ","みっつ","よっつ","いつつ","ひとり","ふたり","なんにん","いくつ","りんご","おおきい","ちいさい","たかい","やすい","あたらしい","ふるい","おいしい","あつい","さむい","きれい","しずか","げんき","ゆうめい","べんり","しんせつ","ひま","とても","あまり","たのしい","むずかしい","かんたん","きらい","じょうず","りょうり","うた","スポーツ","ほしい","じてんしゃ","きょうと","おんせん","とります","どうして","いそがしい","じかん","かぜ","こんばん","でも","たいへん","まちます","はなします","いいます","すわります","おしえます","ゆっくり","もういちど","わかりました","あめ","ふります","すみます","もちます","しります","つくります","もしもし","そと","つかいます","あけます","しめます","まど","すいます","たばこ","だめ","はじめます","おわります","つづけます","がんばります","これから","また","ちゅうごく","おとこのひと","おんなのひと","こども","ちち","はは","あに","あね","おとうと","いもうと","ばん","ことし","らいねん","きょねん","こんげつ","らいげつ","せんげつ","こんしゅう","まいしゅう","はる","あき","ふゆ","たんじょうび","ぎんこう","ゆうびんきょく","くに","みち","そら","がいこく","きっさてん","しょくどう","こうばん","あさごはん","ばんごはん","やさい","くだもの","たまご","ぎゅうにゅう","おさけ","おかし","じしょ","めがね","いす","ふく","ぼうし","きっぷ","ちかてつ","ひこうき","くち","あし","おなか","いく","くる","かえる","たべる","のむ","みる","かく","はなす","かう","あう","まつ","おきる","ねる","あるく","はしる","およぐ","たつ","すわる","はいる","でる","あける","しめる","おしえる","ならう","べんきょうする","はたらく","やすむ","つかう","つくる","もつ","とる","あらう","きる","ぬぐ","のる","おりる","すむ","しる","わかる","わすれる","おぼえる","する","ひくい","ながい","みじかい","つめたい","やさしい","おもしろい","はやい","おそい","とおい","おおい","すくない","わるい","しろい","くろい","あかい","あおい","にぎやか","だいじょうぶ","すこし","たくさん","もう","まだ","いつも","ときどき","よく","なに","いつ","どれ","どの"]],"slowAt":[["あ","い","う","え","お","か","き","く","け","こ","さ","し","す","せ","そ","た","ち","つ","て","と","な","に","ぬ","ね","の","は","ひ","ふ","へ","ほ","ま","み","む","め","も","や","ゆ","よ","ら","り","る","れ","ろ","わ","を","ん","が","ぎ","ぐ","げ","ご","ざ","じ","ず","ぜ","ぞ","だ","ぢ","づ","で","ど","ば","び","ぶ","べ","ぼ","ぱ","ぴ","ぷ","ぺ","ぽ","きゃ","きゅ","きょ","しゃ","しゅ","しょ","ちゃ","ちゅ","ちょ","にゃ","にゅ","にょ","ひゃ","ひゅ","ひょ","みゃ","みゅ","みょ","りゃ","りゅ","りょ","ぎゃ","ぎゅ","ぎょ","じゃ","じゅ","じょ","びゃ","びゅ","びょ","ぴゃ","ぴゅ","ぴょ","がっこう","きって","おかあさん","とうきょう","せんせい","あい","いえ","うえ","あお","いい","おい","かお","あか","えき","こえ","いけ","きく","くうき","さけ","しお","すし","あさ","うそ","せかい","すき","たこ","ちかい","つき","とけい","くつ","した","なつ","にく","いぬ","ねこ","あなた","さかな","きのこ","はな","ひと","ふね","へた","ほし","はこ","ふたつ","まち","みみ","むし","もも","うみ","さしみ","あたま","やま","ゆき","よむ","へや","ゆめ","やすみ","さくら","よる","くるま","ふろ","れきし","からい","ろく","わたし","かわ","にわ","ほん","にほん","おんな","えん","がくせい","かぞく","でんわ","ぶた","ごはん","かばん","みず","かき","かぎ","てんき","でんき","さんぽ","えんぴつ","ぴかぴか","ぽかぽか","ぺらぺら","きょう","しゃしん","おちゃ","りょこう","びょういん","ひゃく","じゅぎょう","びよういん","ざっし","おばあさん","おとうさん","きて","おばさん","おじいさん","おじさん","ウエア","エア","アイ","ケーキ","ココア","カカオ","キウイ","アイス","ソース","ケース","コース","キス","タクシー","テスト","トースト","スーツ","ツアー","テニス","ネクタイ","ノート","ナイス","カヌー","コーヒー","ハート","ヒーター","ヘア","ハーフ","メモ","マスク","ミニ","チーム","ハム","タイヤ","ヨーヨー","ユーモア","カメラ","ホテル","ルール","クラス","トイレ","ワイン","レモン","メロン","ハワイ","バス","ビール","テレビ","ゲーム","ドア","ボール","サラダ","パン","ピアノ","ペン","シャツ","ジュース","ニュース","メニュー","シャワー","チケット","クッキー","カップ","パーティー","カフェ","チーズ","ベッド","ベド","カード","カド","ビル"],["こんにちは"],["がこう","おはようございます","こんばんは","ありがとうございます","すみません","さようなら","おやすみなさい","ちゅうごくじん","にほんじん","かいしゃいん","さん","はい","いいえ","そうです","いしゃ","ぎんこういん","エンジニア","だれ","ともだち","だいがく","にほんご","なまえ","かいしゃ","いち","よん","なな","はち","きゅう","じゅう","でんわばんごう","これ","それ","あれ","かさ","なん","この","その","あの","しんぶん","ここ","そこ","あそこ","どこ","きょうしつ","せん","まん","いくら","おかね","いま","なんじ","ふん","はん","ごぜん","ごご","あした","きのう","まいにち","なんようび","げつようび","きんようび","にちようび","いきます","きます","かえります","でんしゃ","あるいて","うち","らいしゅう","たべます","のみます","みます","よみます","ききます","えいが","おんがく","かいます","かきます","べんきょうします","てがみ","みせ","としょかん","スーパー","おきます","ねます","はたらきます","ひる","まいあさ","します","せんしゅう","けさ","しゅうまつ","なにも","どこへも","あいます","やすみます","いっしょに","ひるごはん","こうえん","のみもの","ちょっと","いいですね","あります","います","なか","まえ","つくえ","ひとつ","みっつ","よっつ","いつつ","ひとり","ふたり","なんにん","いくつ","りんご","おおきい","ちいさい","たかい","やすい","あたらしい","ふるい","おいしい","あつい","さむい","きれい","しずか","げんき","ゆうめい","べんり","しんせつ","ひま","とても","あまり","たのしい","むずかしい","かんたん","きらい","じょうず","りょうり","うた","スポーツ","ほしい","じてんしゃ","きょうと","おんせん","とります","どうして","いそがしい","じかん","かぜ","こんばん","でも","たいへん","まちます","はなします","いいます","すわります","おしえます","ゆっくり","もういちど","わかりました","あめ","ふります","すみます","もちます","しります","つくります","もしもし","そと","つかいます","あけます","しめます","まど","すいます","たばこ","だめ","はじめます","おわります","つづけます","がんばります","これから","また","ちゅうごく","おとこのひと","おんなのひと","こども","ちち","はは","あに","あね","おとうと","いもうと","ばん","ことし","らいねん","きょねん","こんげつ","らいげつ","せんげつ","こんしゅう","まいしゅう","はる","あき","ふゆ","たんじょうび","ぎんこう","ゆうびんきょく","くに","みち","そら","がいこく","きっさてん","しょくどう","こうばん","あさごはん","ばんごはん","やさい","くだもの","たまご","ぎゅうにゅう","おさけ","おかし","じしょ","めがね","いす","ふく","ぼうし","きっぷ","ちかてつ","ひこうき","くち","あし","おなか","いく","くる","かえる","たべる","のむ","みる","かく","はなす","かう","あう","まつ","おきる","ねる","あるく","はしる","およぐ","たつ","すわる","はいる","でる","あける","しめる","おしえる","ならう","べんきょうする","はたらく","やすむ","つかう","つくる","もつ","とる","あらう","きる","ぬぐ","のる","おりる","すむ","しる","わかる","わすれる","おぼえる","する","ひくい","ながい","みじかい","つめたい","やさしい","おもしろい","はやい","おそい","とおい","おおい","すくない","わるい","しろい","くろい","あかい","あおい","にぎやか","だいじょうぶ","すこし","たくさん","もう","まだ","いつも","ときどき","よく","なに","いつ","どれ","どの"]]};
 /* 课程数据。写法约定：
@@ -1876,7 +2077,11 @@ const addDays = (s, n) => { const [y, m, d] = s.split("-").map(Number); return y
 const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const code = n => pad(n);
 const plain = s => s.replace(/\{[^}]*\}/g, "");
-const ruby = s => s.replace(/([㐀-鿿々〆]+)\{([^}]+)\}/g, "<ruby>$1<rt>$2</rt></ruby>");
+const ruby = (s, tap) => s.split(/([㐀-鿿々〆]+\{[^}]+\})/).map((p, i) => {
+  if (i % 2 === 0) return kanaHtml(p, tap);
+  const m = p.match(/^(.+)\{(.+)\}$/);
+  return kanjiHtml(m[1], m[2]);
+}).join("");
 const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const SPEAKER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4 4 0 0 0-2-3.5v7a4 4 0 0 0 2-3.5zm-2-7.8v2.1a7 7 0 0 1 0 11.4v2.1a9 9 0 0 0 0-15.6z"/></svg>';
 const TRAIN = '<svg viewBox="0 0 30 18" aria-hidden="true"><path fill="currentColor" d="M2 2h20c4 0 6 3 7 8v3a2 2 0 0 1-2 2H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path fill="var(--paper)" d="M4 5h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zm6 0h1c1.700 0 2.600 1.500 3 4h-4z"/></svg>';
@@ -1890,10 +2095,10 @@ function split(w) {
   let b = 0; while (b < d.length - a && d[d.length - 1 - b] === r[r.length - 1 - b]) b++;
   return { lead, pre: d.slice(0, a), core: d.slice(a, d.length - b), rd: r.slice(a, r.length - b), post: d.slice(d.length - b) };
 }
-function wordHtml(w) {
+function wordHtml(w, tap) {
   const p = split(w);
-  if (p.plain) return p.lead + p.d;
-  return `${p.lead}${p.pre}<ruby>${p.core}<rt>${p.rd}</rt></ruby>${p.post}`;
+  if (p.plain) return p.lead + kanaHtml(p.d, tap);
+  return p.lead + kanaHtml(p.pre, tap) + kanjiHtml(p.core, p.rd) + kanaHtml(p.post, tap);
 }
 
 /* 练习题干里的汉字自动注音，字典来自课程词汇，再补上固定读法 */
@@ -1914,23 +2119,23 @@ const DICT = (() => {
 function autoRuby(s) {
   if (!/[ぁ-んァ-ン]/.test(s)) return esc(s);
   /* 括号里是中文提示，整段跳过；连续汉字必须被字典完全覆盖才注音，避免碰到中文词 */
-  return esc(s).split(/(（.*?）)/).map(part => part[0] === "（" ? part : part.replace(/[㐀-鿿々]+/g, (run, at, all) => {
-    if (run === "何") return `<ruby>何<rt>${all.startsWith("です", at + 1) ? "なん" : "なに"}</rt></ruby>`;
-    if (DICT[run]) return `<ruby>${run}<rt>${DICT[run]}</rt></ruby>`;
+  return esc(s).split(/(（.*?）)/).map(part => part[0] === "（" ? part : ruby(part.replace(/[㐀-鿿々]+/g, (run, at, all) => {
+    if (run === "何") return `何{${all.startsWith("です", at + 1) ? "なん" : "なに"}}`;
+    if (DICT[run]) return `${run}{${DICT[run]}}`;
     let out = "", i = 0;
     while (i < run.length) {
       let len = 0;
       for (let n = run.length - i; n > 0; n--) if (DICT[run.substr(i, n)]) { len = n; break; }
       if (!len) return run;
       const k = run.substr(i, len);
-      out += `<ruby>${k}<rt>${DICT[k]}</rt></ruby>`; i += len;
+      out += `${k}{${DICT[k]}}`; i += len;
     }
     return out;
-  })).join("");
+  }))).join("");
 }
 
 /* ---------- 进度 ---------- */
-const blank = () => ({ v: 1, epoch: 0, t: 0, xp: 0, days: {}, done: {}, srs: {}, my: {}, plan: null, kana: {}, kdone: {}, kplace: {}, kbest: {}, gram: {}, ba: {}, fz: { n: 1, at: 0 }, name: "", goal: 40, set: { furi: true, slow: false } });
+const blank = () => ({ v: 1, epoch: 0, t: 0, xp: 0, days: {}, done: {}, srs: {}, my: {}, plan: null, kana: {}, kdone: {}, kplace: {}, kbest: {}, gram: {}, ba: {}, fz: { n: 1, at: 0 }, name: "", goal: 40, kmark: {}, knote: {}, wnote: {}, notes: {}, set: { furi: true, slow: false, ro: "smart" } });
 function load() {
   try { const r = localStorage.getItem(KEY); if (r) { const o = JSON.parse(r); return { ...blank(), ...o, set: { ...blank().set, ...o.set } }; } } catch {}
   return blank();
@@ -1950,6 +2155,10 @@ function merge(a, b) {
   m.kplace = { ...(b.kplace || {}), ...(a.kplace || {}) };
   m.ba = { ...(b.ba || {}), ...(a.ba || {}) };
   m.gram = { ...(a.gram || {}) };
+  for (const f of ["kmark", "knote", "wnote", "notes"]) {
+    m[f] = { ...(a[f] || {}) };
+    for (const [k, v] of Object.entries(b[f] || {})) if (!m[f][k] || (v.at || 0) > (m[f][k].at || 0)) m[f][k] = v;
+  }
   for (const [k, v] of Object.entries(b.gram || {})) if (!m.gram[k] || (v.at || 0) > (m.gram[k].at || 0)) m.gram[k] = v;
   if ((b.fz?.at || 0) > (a.fz?.at || 0)) m.fz = b.fz;
   m.kana = { ...(a.kana || {}) };
@@ -2018,7 +2227,7 @@ for (const l of LESSONS) {
 /* 导师词表收进来的词没有所属课程，归到这个虚拟的一站，干扰项取自全部课程 */
 const MY = { id: LESSONS.length, words: [] };
 function registerMy() {
-  S.my ||= {}; S.kana ||= {}; S.kdone ||= {}; S.kplace ||= {}; S.kbest ||= {}; S.gram ||= {}; S.ba ||= {}; S.fz ||= { n: 1, at: 0 }; S.goal ||= 40; S.name ??= "";
+  S.my ||= {}; S.kana ||= {}; S.kdone ||= {}; S.kplace ||= {}; S.kbest ||= {}; S.gram ||= {}; S.ba ||= {}; S.fz ||= { n: 1, at: 0 }; S.goal ||= 40; S.name ??= ""; S.kmark ||= {}; S.knote ||= {}; S.wnote ||= {}; S.notes ||= {}; S.set.ro ||= "smart";
   MY.words = Object.values(S.my);
   for (const w of MY.words) WORD["w:" + w[0]] = { w, l: MY };
 }
@@ -2138,14 +2347,14 @@ function qWord(w, l) {
 function qListen(w, l) {
   const ds = pick(w, l.words, poolTo(l.id), x => x[1]);
   return { kind: "mc", label: "听音选词", listen: w[1], say: w[1], auto: true, srs: "w:" + w[0], two: true,
-    choices: shuffle([w, ...ds]).map(x => ({ html: esc(x[1]), key: x[1], ja: true })), ans: w[1], after: after(w) };
+    choices: shuffle([w, ...ds]).map(x => ({ html: kanaHtml(esc(x[1])), key: x[1], ja: true })), ans: w[1], after: after(w) };
 }
 function qSpell(w, l) {
   const chars = [...w[1]];
   const kata = /[ァ-ヶー]/.test(w[1]);
   const extra = shuffle(poolTo(l.id).flatMap(x => [...x[1]]).filter(c => /[ァ-ヶー]/.test(c) === kata && !chars.includes(c))).filter((c, i, a) => a.indexOf(c) === i).slice(0, 3);
   return { kind: "tiles", label: "拼出读音", q: `${wordHtml(w)}`, jp: true, sub: esc(w[2]), srs: "w:" + w[0], say: w[1],
-    tiles: shuffle([...chars, ...extra]).map(c => ({ html: c, t: c })), ans: [w[1]], after: after(w) };
+    tiles: shuffle([...chars, ...extra]).map(c => ({ html: kanaHtml(c), t: c })), ans: [w[1]], after: after(w) };
 }
 function qDrill(d, l, key) {
   const toks = d[0].split("|");
@@ -2165,7 +2374,7 @@ function qCloze(c) {
 }
 function qPair(p) {
   return { kind: "mc", label: "听一听，是哪个？", listen: p[0], say: p[0], auto: true, two: true,
-    choices: p[1].map(x => ({ html: esc(x), key: x, ja: true })), ans: p[0], after: `<span class="ja" lang="ja">${esc(p[0])}</span>` };
+    choices: p[1].map(x => ({ html: kanaHtml(esc(x)), key: x, ja: true })), ans: p[0], after: `<span class="ja" lang="ja">${kanaHtml(esc(p[0]))}</span>` };
 }
 function buildLesson(l, again) {
   const steps = [{ k: "arrive", l, again }];
@@ -2276,15 +2485,16 @@ function beatRo(b) {
   if (/[ゃゅょ]/.test(h[1])) return /^(shi|chi|ji)$/.test(base) ? base.slice(0, -1) + v : base.slice(0, -1) + "y" + v;
   return base.replace(/[aiueo]$/, "") + v;
 }
+function moraRo(bs, i) {
+  const b = bs[i];
+  if (/[っッ]/.test(b)) { const n = beatRo(bs[i + 1] || ""); return n.startsWith("ch") ? "t" : n[0] || ""; }
+  if (b === "ー") return beatRo(bs[i - 1] || "").slice(-1);
+  return beatRo(b);
+}
+/* こんにちは、こんばんは 结尾的 は 是助词，读 wa */
 function romaji(r) {
-  let out = "";
-  const bs = beats(r.replace(/[〜\s]/g, ""));
-  bs.forEach((b, i) => {
-    if (b === "っ" || b === "ッ") { const n = beatRo(bs[i + 1] || ""); out += n.startsWith("ch") ? "t" : n[0] || ""; }
-    else if (b === "ー") out += out.slice(-1);
-    else out += beatRo(b);
-  });
-  return out;
+  const bs = beats(r.replace(/[〜\s]/g, "").replace(/(こんにち|こんばん)は$/, "$1わ"));
+  return bs.map((_, i) => moraRo(bs, i)).join("");
 }
 function readTips(r) {
   const bs = beats(r.replace(/[〜\s]/g, "")), tips = new Set();
@@ -2314,7 +2524,7 @@ function exampleFor(w, l) {
 function wordLearn(w, l) {
   const bs = beats(w[1].replace(/[〜\s]/g, "")), ex = exampleFor(w, l), same = w[0].replace("〜", "") === w[2];
   return `<div class="learn"><div class="eyebrow">怎么读</div>
-    <div class="beats" lang="ja">${bs.map(b => `<span>${b}</span>`).join("")}</div>
+    <div class="beats" lang="ja">${bs.map((b, i) => `<span>${b}<i>${moraRo(bs, i)}</i></span>`).join("")}</div>
     <p>一共 ${bs.length} 拍，每一拍一样长。点喇叭听，跟着读出声。</p>
     ${readTips(w[1]).map(t => `<p class="li">${t}</p>`).join("")}
     ${same ? `<div class="eyebrow">怎么记</div><p>汉字和中文一样，意思也一样，只要记住读音。</p>` : ""}
@@ -2324,7 +2534,7 @@ function wordLearn(w, l) {
 /* ---------- 课程渲染 ---------- */
 const soundBtn = (text, label = "朗读") => `<button class="sound" data-a="say" data-v="${esc(text)}" aria-label="${label}">${SPEAKER}</button>`;
 function exRow(e) {
-  return `<div class="ex"><div><b lang="ja">${ruby(e[0])}</b><small>${esc(e[1])}</small></div>${/[ぁ-んァ-ヶ一-鿿]/.test(e[0]) ? soundBtn(plain(e[0])) : ""}</div>`;
+  return `<div class="ex"><div><b lang="ja">${ruby(e[0], true)}</b><small>${esc(e[1])}</small></div>${/[ぁ-んァ-ヶ一-鿿]/.test(e[0]) ? soundBtn(plain(e[0])) : ""}</div>`;
 }
 function stepBody(st) {
   if (KSTEP[st.k]) return KSTEP[st.k](st);
@@ -2338,7 +2548,7 @@ function stepBody(st) {
   }
   if (st.k === "rule") {
     const g = st.g;
-    return { html: `<div class="tag-l">语法</div><div class="rule"><h2 lang="ja">${esc(g.p)}</h2><div class="m" lang="ja">${esc(g.m)}</div><p class="note">${esc(g.note)}</p></div><div>${g.ex.map(exRow).join("")}</div>${aiBlock(st, "没听懂？请导师换个说法")}`, foot: btn("继续") };
+    return { html: `<div class="tag-l">语法</div><div class="rule"><h2 lang="ja">${ruby(esc(g.p))}</h2><div class="m" lang="ja">${ruby(esc(g.m))}</div><p class="note">${ruby(esc(g.note))}</p></div><div>${g.ex.map(exRow).join("")}</div>${aiBlock(st, "没听懂？请导师换个说法")}`, foot: btn("继续") };
   }
   if (st.k === "talk") {
     const me = n => n === "王";
@@ -2379,7 +2589,7 @@ function renderSes() {
   if (ses.done) return renderDone();
   const st = ses.steps[ses.i], body = stepBody(st), { html, foot, cls = "", auto } = body;
   const pct = Math.round(ses.i / ses.steps.length * 100);
-  sesEl.innerHTML = `<div class="ses-head"><button class="x" data-a="askLeave" aria-label="下车">×</button><div class="track" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><u style="width:${pct}%"></u><span style="position:absolute;inset:0">${TRAIN.replace("<svg", `<svg style="left:${pct}%"`)}</span></div></div>
+  sesEl.innerHTML = `<div class="ses-head"><button class="x" data-a="askLeave" aria-label="下车">×</button><div class="track" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><u style="width:${pct}%"></u><span style="position:absolute;inset:0">${TRAIN.replace("<svg", `<svg style="left:${pct}%"`)}</span></div><button class="ro-btn" data-a="roCycle" aria-label="切换罗马音注音">${{ smart: "智能注音", all: "全部注音", off: "无注音" }[S.set.ro]}</button></div>
     <div class="ses-body"><div class="ses-in">${html}</div></div>
     ${foot ? `<div class="ses-foot ${cls}"><div>${foot}</div></div>` : "<div></div>"}
     ${ses.leaving ? `<div class="modal"><div><b>现在下车？</b><p>这一趟的进度不会保存。</p><button class="btn" data-a="stay">继续坐</button><button class="btn ghost" data-a="leave">下车</button></div></div>` : ""}`;
@@ -2424,11 +2634,20 @@ function stampSvg(l, date) {
 }
 
 /* ---------- 主界面 ---------- */
+const NAV_ICON = {
+  home: '<path d="M7 3h10a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3zM4 11h16M8.500 21l1.500-3M15.500 21L14 18"/><circle cx="8.500" cy="14.500" r=".6"/><circle cx="15.500" cy="14.500" r=".6"/>',
+  kana: '<text x="12" y="18" text-anchor="middle" font-size="17" font-weight="700" stroke="none" fill="currentColor" font-family="var(--kf)">あ</text>',
+  note: '<path d="M6 3h12a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM9 3v18M12.500 8H16M12.500 12H16"/>',
+  tutor: '<path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H10l-5 4v-4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/>',
+  words: '<path d="M8 4h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zM7 7H5a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1"/>',
+  book: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/>',
+};
 function topBar() {
-  const tabs = [["home", "今日"], ["kana", "五十音"], ["line", "线路"], ["tutor", "导师"], ["words", "词本"], ["book", "我的"]].filter(t => !PWA || t[0] !== "tutor");
+  const tabs = [["home", "今日"], ["kana", "五十音"], ["note", "笔记"], ["tutor", "导师"], ["words", "词本"], ["book", "我的"]].filter(t => !PWA || t[0] !== "tutor");
+  const l = lvOf(S.xp);
   return `<header class="top"><div class="brand" lang="ja"><i></i>各駅停車</div>
-    <nav class="nav" aria-label="主导航">${tabs.map(([k, t]) => `<button data-a="tab" data-v="${k}" ${view === k ? 'aria-current="page"' : ""}>${t}</button>`).join("")}</nav>
-    <div class="top-stats"><span><b>${streak()}</b>天连续</span><span><b>${S.xp}</b>里程</span></div></header>`;
+    <nav class="nav" aria-label="主导航">${tabs.map(([k, t]) => `<button data-a="tab" data-v="${k}" ${view === k || (view === "line" && k === "home") ? 'aria-current="page"' : ""}><svg viewBox="0 0 24 24" aria-hidden="true">${NAV_ICON[k]}</svg>${t}</button>`).join("")}</nav>
+    <div class="top-stats"><span class="fire${active(today()) ? " lit" : ""}">${FLAME}<b>${streak()}</b><em>天</em></span><span><b>${l.n}</b><em>级</em></span></div></header>`;
 }
 function homeView() {
   const next = nextLesson(), due = dueKeys().length, t = today(), todayDay = S.days[t];
@@ -2442,22 +2661,24 @@ function homeView() {
   else if (next && !doneToday) cta = `<button class="btn" data-a="lesson" data-v="${next.id}">发车：第 ${next.id} 站</button>`;
   else if (next) cta = `<button class="btn ghost" data-a="lesson" data-v="${next.id}">今天已到站，想再坐一站</button>`;
   else cta = `<button class="btn" disabled>全线已走完，等待明天的复习</button>`;
-  return `<div class="grid">${homeHead()}<div class="grid home"><div class="grid">${homeEntries()}
+  return `<div class="grid home"><div class="grid">
     <section class="sign" aria-label="当前车站">
       <div class="sign-top"><span class="code"><span>NH</span><b>${code(cur.id)}</b></span>
-        <div class="sign-name"><h1 lang="ja">${cur.st}</h1><p>${esc(cur.zh)}</p></div>${soundBtn(announce, "听报站")}</div>
+        <div class="sign-name"><h1 lang="ja">${cur.st}</h1><p class="sign-ro">${romaji(cur.st)}</p><p>${esc(cur.zh)}</p></div>${soundBtn(announce, "听报站")}</div>
       <div class="sign-band"><i></i></div>
-      <div class="sign-foot"><span>${prev ? `<b lang="ja">← ${prev.st}</b>${esc(prev.zh)}` : "<b>始发站</b>从这里出发"}</span><span>${after ? `<b lang="ja">${after.st} →</b>${esc(after.zh)}` : "<b>终点站</b>全线到此为止"}</span></div>
+      <div class="sign-foot"><span>${prev ? `<b lang="ja">← ${prev.st}</b>${esc(prev.zh)}` : "<b>始发站</b>从这里出发"}</span><button class="link" data-a="tab" data-v="line">全线图</button><span>${after ? `<b lang="ja">${after.st} →</b>${esc(after.zh)}` : "<b>终点站</b>全线到此为止"}</span></div>
+      <div class="sign-cta">${cta}</div>
     </section>
-    <section class="panel"><div class="eyebrow">今日行程</div>${homeTasks(next, minutes)}${cta}${PWA ? "" : `<button class="btn ghost" data-a="tutor" data-v="talk">和导师说几句日语</button>`}</section></div>
-    <aside class="grid home-side">${homeCheck()}${homeWord()}</aside></div></div>`;
+    ${homeTasks(next, minutes)}
+    ${PWA ? "" : `<button class="btn ghost" data-a="tutor" data-v="talk">和导师说几句日语</button>`}</div>
+    <aside class="grid">${homeMemo()}${homeCheck()}${homeWord()}${homeEntries()}</aside></div>`;
 }
 function lineView() {
   const next = nextLesson();
   return `<div class="line-wrap">${UNITS.map((u, i) => `<div class="unit"><h2>${u.name}<span class="ja" lang="ja">${u.ja}</span></h2><p>${esc(u.zh)}</p></div>
     <div class="rail">${LESSONS.filter(l => l.unit === i).map(l => {
       const done = !!S.done[l.id], cur = next && next.id === l.id;
-      return `<button class="st ${done ? "done" : cur ? "cur" : "locked"}" data-a="station" data-v="${l.id}"><span class="node"></span><span><b lang="ja">${l.st}</b><small>${esc(l.zh)}${done ? ` · ${S.done[l.id].d.slice(5).replace("-", "/")} 到达` : ""}</small></span><span class="tag">NH ${code(l.id)}</span></button>`;
+      return `<button class="st ${done ? "done" : cur ? "cur" : "locked"}" data-a="station" data-v="${l.id}"><span class="node"></span><span><b lang="ja">${l.st}</b><small><span class="st-ro">${romaji(l.st)}</span> · ${esc(l.zh)}${done ? ` · ${S.done[l.id].d.slice(5).replace("-", "/")} 到达` : ""}</small></span><span class="tag">NH ${code(l.id)}</span></button>`;
     }).join("")}</div>`).join("")}</div>`;
 }
 function wordsView() {
@@ -2501,6 +2722,7 @@ function bookView() {
     <section class="panel"><div class="set"><div>昵称<small>显示在首页和打卡图上</small></div><input class="field name" id="my-name" maxlength="12" placeholder="旅人" aria-label="昵称" value="${esc(S.name)}"></div>
       <div class="set"><div>每日目标<small>只影响目标进度，学一次就算打卡</small></div><div class="goal-pick">${DAY_GOALS.map(([n, t, s]) => `<button class="chip" data-a="setGoal" data-v="${n}" aria-pressed="${S.goal === n}" title="${s}">${t} ${n}</button>`).join("")}</div></div>
       <div class="set"><div>显示振假名<small>汉字上方标注读音</small></div><button class="switch" role="switch" aria-checked="${S.set.furi}" aria-label="显示振假名" data-a="setFuri"></button></div>
+      <div class="set set-col"><div>罗马音注音<small>像拼音一样标在假名下面，熟了自动消失</small></div><div class="seg" role="group" aria-label="罗马音注音">${[["smart", "只标不熟的"], ["all", "全部标注"], ["off", "不标注"]].map(([k, t]) => `<button data-a="roSet" data-v="${k}" aria-pressed="${S.set.ro === k}">${t}</button>`).join("")}</div></div>
       <div class="set"><div>慢速朗读<small>听不清时打开</small></div><button class="switch" role="switch" aria-checked="${S.set.slow}" aria-label="慢速朗读" data-a="setSlow"></button></div>
       <div class="set"><div>进度保存<small>${syncText}</small></div></div>
       ${backupRows()}
@@ -2509,8 +2731,10 @@ function bookView() {
 }
 function render() {
   document.body.classList.toggle("no-furi", !S.set.furi);
-  const body = { home: homeView, kana: kanaView, line: lineView, tutor: tutorView, words: wordsView, book: bookView }[view]();
+  const body = { home: homeView, kana: kanaView, line: lineView, note: noteView, tutor: tutorView, words: wordsView, book: bookView }[view]();
   appEl.innerHTML = `<div class="shell">${topBar()}<main>${body}</main></div>`;
+  const nb = document.getElementById("nb-text");
+  if (nb) fitNote(nb);
 }
 
 /* ---------- 事件 ---------- */
@@ -2563,8 +2787,92 @@ document.addEventListener("keydown", e => {
   const n = +e.key;
   if (n >= 1 && n <= 9) sesEl.querySelectorAll(".opt:enabled")[n - 1]?.click();
 });
+/* ---------- 罗马音标注 ----------
+   不熟的假名像拼音一样在下方注音，学熟后自动消失。
+   S.set.ro：smart 只标不熟的，all 全部标注，off 不标注。
+   S.kmark 记录用户手动改过的假名，优先于自动判断。 */
+const RO_WORDS = new Set("です ですか でした ます ますか ました ません ませんか ませんでした ましょう ください じゃありません ありません あります います いません たいです から まで".split(" "));
+for (const l of LESSONS) { RO_WORDS.add(l.st); l.words.forEach(w => RO_WORDS.add(w[1])); }
+for (const w of N5W) RO_WORDS.add(w[1]);
+for (const r of KROWS) r.words.forEach(w => RO_WORDS.add(w[0]));
+/* どこへも 里的 へ 是助词，词库里按整词收的要拆开 */
+for (const w of ["は", "へ", "どこへも"]) RO_WORDS.delete(w);
+RO_WORDS.add("どこ"); RO_WORDS.add("も");
+const RO_PARTICLE = new Set("はがをにへでともかのねよや");
+const RO_MAX = Math.max(...[...RO_WORDS].map(w => w.length));
+const RO_CACHE = new Map();
+/* 这一行已经单独写了读音时，字下面不再重复注音 */
+let roHide = false;
+const noRo = fn => { roHide = true; const out = fn(); roHide = false; return out; };
+
+/* 句子没有分词，は へ 是助词还是词的一部分要靠词库判断：
+   按“词的数量最少、不认识的字最少”切分，单独切出来的 は へ 才是助词 */
+function particleAt(run) {
+  const n = run.length, cost = Array(n + 1).fill(Infinity), from = Array(n + 1).fill(0), out = new Set();
+  cost[0] = 0;
+  for (let i = 0; i < n; i++) {
+    for (let len = 1; len <= Math.min(RO_MAX, n - i); len++) {
+      const w = run.slice(i, i + len);
+      const c = RO_WORDS.has(w) ? (len > 1 ? 1 : 1.5) : len > 1 ? Infinity : RO_PARTICLE.has(w) ? 1.2 : 4;
+      if (cost[i] + c < cost[i + len]) { cost[i + len] = cost[i] + c; from[i + len] = i; }
+    }
+  }
+  for (let e = n; e > 0; e = from[e]) if (e - from[e] === 1 && "はへ".includes(run[from[e]])) out.add(from[e]);
+  for (const m of run.matchAll(/(?:こんにち|こんばん)は/g)) out.add(m.index + m[0].length - 1);
+  return out;
+}
+function runMoras(run) {
+  if (RO_CACHE.has(run)) return RO_CACHE.get(run);
+  const bs = beats(run), part = particleAt(run);
+  let at = 0;
+  const out = bs.map((b, i) => {
+    const m = { b, ro: part.has(at) ? (b === "は" ? "wa" : "e") : moraRo(bs, i) };
+    at += b.length;
+    return m;
+  });
+  RO_CACHE.set(run, out);
+  return out;
+}
+
+function kanaWeak(ch) {
+  const m = S.kmark[ch];
+  if (m) return m.v;
+  const r = S.kana[ch];
+  return !r || r.b < 3;
+}
+const kanaHot = ch => !!S.kmark[ch]?.v || (S.kana[ch]?.bad || 0) >= 2;
+function moraWeak(b) {
+  if (KI[b]) return kanaWeak(b);
+  return [...b].some(c => KI[c] && kanaWeak(c));
+}
+/* 促音和长音没有自己的卡片，跟着前后的假名走 */
+function moraShow(ms, i) {
+  if (roHide || S.set.ro === "off") return false;
+  if (S.set.ro === "all") return true;
+  const b = ms[i].b;
+  if (/^[っッ]$/.test(b)) return !!ms[i + 1] && moraWeak(ms[i + 1].b);
+  if (b === "ー") return i > 0 && moraWeak(ms[i - 1].b);
+  return moraWeak(b);
+}
+const moraUnit = (m, show, tail, tap) => `<span class="u${kanaHot(m.b) ? " hot" : ""}"${tap ? ` data-a="kpeek" data-v="${m.b}"` : ""}><span class="g">${m.b}${tail}</span>${show ? `<i>${m.ro}</i>` : ""}</span>`;
+
+/* 文字里的假名按拍注音，句号顿号跟前一拍放在一起，避免落到行首。tap 为真时可以点开假名卡 */
+function kanaHtml(s, tap) {
+  if (typeof KI === "undefined" || (S.set.ro === "off" && !tap)) return s;
+  return s.replace(/([ぁ-ゖァ-ヺー]+)([。、？！…」）]*)/g, (all, run, tail) => {
+    const ms = runMoras(run), show = ms.map((_, i) => moraShow(ms, i));
+    if (!tap && !show.some(Boolean)) return all;
+    return ms.map((m, i) => moraUnit(m, show[i], i === ms.length - 1 ? tail : "", tap)).join("");
+  });
+}
+function kanjiHtml(base, rd) {
+  const html = `<ruby>${base}<rt>${rd}</rt></ruby>`;
+  if (typeof KI === "undefined" || roHide || S.set.ro === "off") return html;
+  if (S.set.ro === "smart" && !beats(rd).some(moraWeak)) return html;
+  return `<span class="u"><span class="g">${html}</span><i>${romaji(rd)}</i></span>`;
+}
 /* ---------- 五十音：数据索引 ---------- */
-const K = { tab: "path", chart: "q", script: "h", hide: false, run: 0, playing: false, scope: "h" };
+const K = { tab: "path", chart: "q", script: "h", hide: false, marking: false, peek: null, run: 0, playing: false, scope: "h" };
 const KI = {};
 const kata = s => s.replace(/[ぁ-ゖ]/g, c => String.fromCharCode(c.charCodeAt(0) + 96));
 for (const [key, n] of Object.entries(KN)) {
@@ -2851,6 +3159,7 @@ const KSTEP = {
         ${n.hw ? `<div class="eyebrow">怎么写</div><p>${esc(n.hw)}</p>` : ""}
         ${conf.length ? `<div class="eyebrow">别弄混</div>${conf.map(c => `<p>${esc(c.tip)}</p>`).join("")}` : ""}
         ${words.length ? `<div class="eyebrow">例词</div>${words.map(wordRow).join("")}` : ""}</div>
+      <button class="chip k-mark" data-a="kpeek" data-v="${it.ch}">${S.knote[it.ch]?.t ? "改我的记法" : "写我的记法"} · ${kanaWeak(it.ch) ? "不熟" : "已熟"}</button>
       <div class="tag-l">写一遍：跟着笔顺描，也可以用纸笔写 3 遍，边写边读出声</div>${padHtml(it.ch)}
       ${aiBlock(st, "还是不会？请导师讲这个假名")}`, foot, auto: kText(it.ch), mount: "stroke" };
   },
@@ -2993,13 +3302,15 @@ function kPathView() {
 }
 function kChartView() {
   const c = K.chart, sc = K.script, tabs = [["q", "清音"], ["d", "浊音"], ["p", "半浊音"], ["y", "拗音"]], scripts = [["h", "平假名"], ["k", "片假名"], ["both", "平片对照"]];
-  const head = `<div class="tools">${tabs.map(([k, t]) => `<button class="chip" data-a="kchart" data-v="${k}" aria-pressed="${c === k}">${t}</button>`).join("")}</div>
-    <div class="tools">${scripts.map(([k, t]) => `<button class="chip" data-a="kscript" data-v="${k}" aria-pressed="${sc === k}">${t}</button>`).join("")}<button class="chip" data-a="khide" aria-pressed="${K.hide}">遮住读音</button><button class="chip" data-a="kalong">${K.playing ? "停止跟读" : "整表跟读"}</button></div>`;
+  const head = `<div class="k-ctl"><div class="seg" role="group" aria-label="假名分类">${tabs.map(([k, t]) => `<button data-a="kchart" data-v="${k}" aria-pressed="${c === k}">${t}</button>`).join("")}</div>
+    <div class="seg" role="group" aria-label="字体">${scripts.map(([k, t]) => `<button data-a="kscript" data-v="${k}" aria-pressed="${sc === k}">${t}</button>`).join("")}</div>
+    <div class="k-tools"><button data-a="khide" aria-pressed="${K.hide}">遮住读音</button><button data-a="kalong" aria-pressed="${K.playing}">${K.playing ? "停止跟读" : "整表跟读"}</button><button data-a="kmarking" aria-pressed="${!!K.marking}">标记不熟</button></div></div>
+    ${K.marking ? `<p class="k-tip">点假名就能标记或取消。标记过的会一直注音，并收进笔记。</p>` : ""}`;
   const toKata = ch => kata(ch);
   const cell = ch => {
     if (!ch) return `<span></span>`;
     const main = sc === "k" ? toKata(ch) : ch;
-    return `<button class="kc ${cellState(main)}" data-a="kopen" data-v="${main}">${kGlyph(main)}${sc === "both" ? `<em class="kf" lang="ja">${toKata(ch)}</em>` : ""}${K.hide ? "" : `<small>${KI[main].ro}</small>`}</button>`;
+    return `<button class="kc ${cellState(main)}${kanaHot(main) ? " hot" : ""}" data-a="${K.marking ? "kmarkT" : "kopen"}" data-v="${main}">${kGlyph(main)}${sc === "both" ? `<em class="kf" lang="ja">${toKata(ch)}</em>` : ""}${K.hide ? "" : `<small>${KI[main].ro}</small>`}</button>`;
   };
   const play = list => `<button class="sound" data-a="say" data-v="${esc(chant(list))}" aria-label="听这一行">${SPEAKER}</button>`;
   let rows;
@@ -3075,7 +3386,7 @@ Object.assign(ACT, {
     const list = K.script === "k" ? base.map(kata) : base;
     readAlong(list);
   },
-  kopen(v) { ses = null; begin("kview", [{ k: "kcard", it: KI[v] }]); },
+  kopen(v) { peekClose(); ses = null; begin("kview", [{ k: "kcard", it: KI[v] }]); },
   krow(v) { const r = KROWS.find(x => x.id === v); ses = null; kBegin("lesson", buildKana(r), { r }); },
   kreview() { kBegin("review", buildKReview()); },
   kgo() { K.tab = "path"; view = "kana"; render(); window.scrollTo(0, 0); },
@@ -3288,15 +3599,15 @@ Object.assign(KSTEP, {
   ncard(st) {
     const w = n5Of(st.key), sm = w[0].length > 7 ? " sm" : "";
     return { html: `<div class="tag-l">词卡 ${Math.min(st.i + 1, st.n)} / ${st.n} · ${st.again ? "再看一遍" : st.fresh ? "新词" : "复习"}</div>
-      <div class="fc" data-a="nflip" aria-label="翻面"><div class="fc-in">
-        <div class="fc-f"><div class="big${sm}" lang="ja">${esc(w[0])}</div><small>${st.fresh && !st.again ? "新词，先想一想，再翻面学" : "想一想读音和意思"}</small></div>
+      <div class="fc${ses.flip ? " on" : ""}" data-a="nflip" aria-label="翻面"><div class="fc-in">
+        <div class="fc-f"><div class="big${sm}" lang="ja">${KANJI.test(w[0]) ? esc(w[0]) : kanaHtml(esc(w[0]))}</div><small>${st.fresh && !st.again ? "新词，先想一想，再翻面学" : "想一想读音和意思"}</small></div>
         <div class="fc-b">${cardBack(st)}</div>
-      </div></div>`, foot: btn("翻面", "nflip") };
+      </div></div>`, foot: ses.flip ? CARD_GRADE : btn("翻面", "nflip") };
   },
   gteach(st) {
     const g = st.g;
-    return { html: `<div class="tag-l">第 ${g.id} 关 · 先学后练</div><div class="rule"><h2 lang="ja">${esc(g.t)}</h2><div class="m" lang="ja">${esc(g.m)}</div><div class="g-form" lang="ja">${esc(g.f)}</div><p class="note">${esc(g.note)}</p></div>
-      <div>${g.ex.map(exRow).join("")}</div><div class="eyebrow" style="margin-top:6px">用你会的语言想</div><div>${crossList(g.cross)}</div>${aiBlock(st, "没听懂？请导师换个说法")}`, foot: btn("学会了，开始闯关") };
+    return { html: `<div class="tag-l">第 ${g.id} 关 · 先学后练</div><div class="rule"><h2 lang="ja">${ruby(esc(g.t))}</h2><div class="m" lang="ja">${ruby(esc(g.m))}</div><div class="g-form" lang="ja">${ruby(esc(g.f))}</div><p class="note">${ruby(esc(g.note))}</p></div>
+      <div>${g.ex.map(exRow).join("")}</div><div class="eyebrow" style="margin-top:6px">用你会的语言想</div><div>${g.cross.map(([l, t]) => `<div class="cross"><span class="lang">${l}</span><p>${ruby(esc(t))}</p></div>`).join("")}</div>${aiBlock(st, "没听懂？请导师换个说法")}`, foot: btn("学会了，开始闯关") };
   },
 });
 const CARD_GRADE = `<div class="fcg"><button class="opt g0" data-a="ngrade" data-v="0"><b>不认识</b><small>重置记忆</small></button><button class="opt g1" data-a="ngrade" data-v="1"><b>模糊</b><small>明天复习</small></button><button class="opt g2" data-a="ngrade" data-v="2"><b>认识</b><small>延后复习</small></button></div>`;
@@ -3371,12 +3682,13 @@ function heatmap() {
   return `<div class="heat">${cells}</div><div class="heat-key"><span>过去 14 天</span><span>少</span>${[1, 2, 3, 4].map(i => `<i class="hc h${i}"></i>`).join("")}<span>多</span></div>`;
 }
 function homeCheck() {
-  const t = today(), d = S.days[t], xp = d?.xp || 0, pct = Math.min(100, Math.round(xp / S.goal * 100)), run = streak();
-  const text = !active(t) ? "今天还没打卡，完成任意一次学习就算数。" : xp < S.goal ? `今天已打卡，再走 ${S.goal - xp} 里程达成目标。` : "今天已打卡，目标也达成了。";
+  const t = today(), d = S.days[t], xp = d?.xp || 0, pct = Math.min(100, Math.round(xp / S.goal * 100)), run = streak(), l = lvOf(S.xp);
+  const text = !active(t) ? "完成任意一次学习就算打卡" : xp < S.goal ? `再走 ${S.goal - xp} 里程达成今日目标` : "今日目标达成";
   return `<section class="panel ck"><div class="ck-top">
       <svg class="ring" viewBox="0 0 60 60" role="img" aria-label="今日目标完成 ${pct}%"><circle cx="30" cy="30" r="25"/>${pct ? `<circle class="v" cx="30" cy="30" r="25" pathLength="100" stroke-dasharray="${pct} 100"/>` : ""}<text x="30" y="35" text-anchor="middle">${pct}%</text></svg>
-      <div><div class="eyebrow">每日打卡</div><b class="ck-n">${active(t) ? `第 ${run} 天` : run ? `已连续 ${run} 天` : "今天开始"}</b><p>${text}</p></div></div>
+      <div><b class="ck-n">${active(t) ? `连续第 ${run} 天` : run ? `已连续 ${run} 天` : "今天开始打卡"}</b><p>${text}</p></div></div>
     ${heatmap()}
+    <div class="ck-lv"><span>${l.n} 级 <span lang="ja">${lvName(l.n)}</span></span><div class="me-bar" role="progressbar" aria-valuenow="${l.need ? Math.round(l.left / l.need * 100) : 100}" aria-valuemin="0" aria-valuemax="100" aria-label="本级进度"><u style="width:${l.need ? Math.round(l.left / l.need * 100) : 100}%"></u></div><small>${l.need ? `还差 ${l.need - l.left}` : "满级"}</small></div>
     <div class="ck-foot"><span>今日 ${xp} / ${S.goal} 里程 · 补签卡 ${S.fz.n} 张</span><button class="chip" data-a="poster" ${active(t) ? "" : "disabled"}>保存打卡图</button></div></section>`;
 }
 function wordOfDay() {
@@ -3385,7 +3697,7 @@ function wordOfDay() {
 }
 function homeWord() {
   const w = wordOfDay();
-  return `<section class="panel wod"><div class="eyebrow">今日一词</div><div class="wod-row"><div><b lang="ja">${wordHtml(w)}</b><small>${esc(w[2])}</small></div>${soundBtn(w[1])}</div>${exRow([w[4], w[5]])}</section>`;
+  return `<section class="panel wod"><div class="eyebrow">今日一词</div><div class="wod-row"><div><b lang="ja">${wordHtml(w, true)}</b><small>${esc(w[2])}</small></div>${soundBtn(w[1])}</div>${exRow([w[4], w[5]])}</section>`;
 }
 function homeEntries() {
   const h = kCount("h"), kd = kDue().length, m = mastery(), g = gNext(), n = Object.keys(S.gram).length;
@@ -3399,13 +3711,13 @@ function homeEntries() {
 function homeTasks(next, minutes) {
   const t = today(), d = S.days[t], due = dueKeys().length, kd = kDue().length, g = gNext(), cards = d?.cards || 0;
   const rows = [];
-  rows.push({ on: due > 0, ok: !due && !!d?.reviews, t: "到期复习", s: due ? `${due} 项` : d?.reviews ? "完成" : "今天没有", a: due ? "review" : "" });
-  if (kd || Object.keys(S.kana).length) rows.push({ on: kd > 0, ok: !kd, t: "五十音复习", s: kd ? `${kd} 个` : "完成", a: kd ? "kreview" : "tab", v: "kana" });
+  rows.push({ c: 0, k: "复习", on: due > 0, ok: !due && !!d?.reviews, t: "到期内容", s: due ? `${due} 项` : d?.reviews ? "完成" : "今天没有", a: due ? "review" : "" });
+  if (kd || Object.keys(S.kana).length) rows.push({ c: 1, k: "假名", on: kd > 0, ok: !kd, t: "五十音复习", s: kd ? `${kd} 个` : "完成", a: kd ? "kreview" : "tab", v: "kana" });
   const les = !!d?.lessons?.length;
-  rows.push({ on: !les && !!next, ok: les, t: next ? `新课：${esc(next.zh)}` : "新课已全部学完", s: les ? "完成" : next ? `约 ${minutes} 分钟` : "", a: next ? "lesson" : "", v: next?.id });
-  rows.push({ on: cards < DAY_CARDS, ok: cards >= DAY_CARDS, t: "N5 词卡", s: `${Math.min(cards, DAY_CARDS)} / ${DAY_CARDS}`, a: "ncards" });
-  if (g) rows.push({ on: !d?.gram, ok: !!d?.gram, t: `语法第 ${g.id} 关`, s: d?.gram ? "完成" : "约 3 分钟", a: "gplay", v: g.id });
-  return `<ul class="plan">${rows.map(r => `<li class="${r.ok ? "ok" : r.on ? "on" : ""}"><button data-a="${r.a}" data-v="${r.v ?? ""}" ${r.a ? "" : "disabled"}><i class="dot"></i><span>${r.t}</span><small>${r.s}</small></button></li>`).join("")}</ul>`;
+  rows.push({ c: 2, k: "新课", on: !les && !!next, ok: les, t: next ? esc(next.zh) : "已全部学完", s: les ? "完成" : next ? `约 ${minutes} 分` : "", a: next ? "lesson" : "", v: next?.id });
+  rows.push({ c: 3, k: "词卡", on: cards < DAY_CARDS, ok: cards >= DAY_CARDS, t: "N5 词汇", s: `${Math.min(cards, DAY_CARDS)} / ${DAY_CARDS}`, a: "ncards" });
+  if (g) rows.push({ c: 4, k: "语法", on: !d?.gram, ok: !!d?.gram, t: `第 ${g.id} 关 <span lang="ja">${esc(g.t)}</span>`, s: d?.gram ? "完成" : "约 3 分", a: "gplay", v: g.id });
+  return `<section class="board" aria-label="今日行程"><header><b lang="ja">発車案内</b><span>今日行程</span></header><ul>${rows.map(r => `<li class="${r.ok ? "ok" : r.on ? "on" : ""}"><button data-a="${r.a}" data-v="${r.v ?? ""}" ${r.a ? "" : "disabled"}><span class="b-k b${r.c}">${r.k}</span><span class="b-t">${r.t}</span><span class="b-s">${r.s}</span></button></li>`).join("")}</ul></section>`;
 }
 
 /* ---------- 词本里的 N5 和语法 ---------- */
@@ -3427,7 +3739,7 @@ function n5View() {
       return `<div class="w"><div><b lang="ja">${wordHtml(w)}</b><small>${esc(w[2])} · ${esc(POS_NOTE[w[3]] || w[3])}</small></div><div class="bars" aria-label="记忆程度 ${b} / 6">${[1, 2, 3, 4, 5, 6].map(i => `<i class="${i <= b ? "on" : ""}"></i>`).join("")}</div>${soundBtn(w[1])}</div>`;
     }).join("")}</div></details>`;
   }).join("");
-  return `<div class="grid home"><div class="stack">${sets}</div><aside class="grid"><section class="panel"><div class="eyebrow">N5 词汇掌握</div>${masteryBar()}<button class="btn" data-a="ncards" style="margin-top:12px">开始今天的 ${buildCards().length} 张词卡</button></section><section class="panel"><div class="eyebrow">顽固词</div>${stubbornList(5)}</section></aside></div>`;
+  return `<div class="grid home n5v"><div class="stack">${sets}</div><aside class="grid"><section class="panel"><div class="eyebrow">N5 词汇掌握</div>${masteryBar()}<button class="btn" data-a="ncards" style="margin-top:12px">开始今天的 ${buildCards().length} 张词卡</button></section><section class="panel"><div class="eyebrow">顽固词</div>${stubbornList(5)}</section></aside></div>`;
 }
 function gTrailView() {
   const next = gNext();
@@ -3515,6 +3827,165 @@ Object.assign(ACT, {
   calm(v) { const cur = CAL.at || today().slice(0, 7), [y, m] = cur.split("-").map(Number), d = new Date(y, m - 1 + +v, 1); CAL.at = ymd(d).slice(0, 7); render(); },
   poster,
 });
+/* ---------- 假名小卡 ----------
+   点句子里的假名弹出来：看读音、助记，改“不熟”标记，写自己的记法 */
+const repaint = () => { if (ses) renderSes(); else render(); };
+function kanaNoteHtml(ch) {
+  const note = S.knote[ch]?.t || "";
+  return `<label class="sheet-note" for="k-note">我的记法</label><textarea id="k-note" rows="2" placeholder="写下你自己的联想，会显示在笔记里">${esc(note)}</textarea>`;
+}
+function peekHtml(ch) {
+  const it = KI[ch];
+  if (!it) {
+    const text = /[っッ]/.test(ch) ? "促音：不发音，停顿一拍，再读后面的假名。" : ch === "ー" ? "长音：把前一个音拉长一拍。" : "小写假名，和前一个假名合成一拍。";
+    return `<div class="sheet-top"><span class="sheet-g kf" lang="ja">${ch}</span><p>${text}</p></div>`;
+  }
+  const n = it.key ? KN[it.key] : null, weak = kanaWeak(ch);
+  return `<div class="sheet-top"><span class="sheet-g kf" lang="ja">${ch}</span>
+      <div class="sheet-ro"><b>${soundOf(it)}</b><small>${it.set === "h" ? "平假名" : "片假名"}${it.key ? ` · 来自「${kPick(it, n.hs, n.ks)}」` : ""}</small></div>${soundBtn(kText(ch))}</div>
+    ${n ? `<p class="sheet-pic">${esc(kPick(it, n.pic, n.kpic))}</p>` : ""}
+    ${kanaNoteHtml(ch)}
+    <div class="seg" role="group" aria-label="这个假名熟不熟"><button data-a="kmark" data-v="1" aria-pressed="${weak}">不熟，继续注音</button><button data-a="kmark" data-v="0" aria-pressed="${!weak}">熟了，不用注音</button></div>
+    ${ses ? "" : `<button class="btn ghost" data-a="kopen" data-v="${ch}">打开学习卡：笔顺和例词</button>`}`;
+}
+function peekOpen(ch) {
+  K.peek = ch;
+  let el = document.getElementById("peek");
+  if (!el) { el = document.createElement("div"); el.id = "peek"; document.body.append(el); }
+  el.innerHTML = `<div class="sheet-bg" data-a="peekClose"></div><section class="sheet" role="dialog" aria-label="${ch} 的读音">${peekHtml(ch)}<button class="sheet-x" data-a="peekClose" aria-label="关闭">×</button></section>`;
+}
+const peekClose = () => { K.peek = null; document.getElementById("peek")?.remove(); };
+
+/* ---------- 每日笔记 ---------- */
+const NB = { day: "", edit: "" };
+const NB_KANA = 6, NB_WORDS = 8;
+const WEEK_JA = "日月火水木金土";
+const dayOf = d => new Date(d + "T00:00");
+/* 当天第一次打开时定下清单，之后不再变，这样划掉的内容不会跳走 */
+function dayList() {
+  const marked = Object.keys(S.kmark).filter(c => S.kmark[c].v && KI[c]), row = nextRow();
+  const kana = [...new Set([...marked, ...kWeak(NB_KANA), ...kDue(), ...(row ? rowItems(row).map(i => i.ch) : [])])].slice(0, NB_KANA);
+  return { k: kana, w: buildCards().slice(0, NB_WORDS).map(s => s.key), g: (gNext() || N5G[Object.keys(S.notes).length % N5G.length]).id };
+}
+function noteToday() {
+  const t = today(), n = S.notes[t] ||= { t: "", at: 0, tick: {} };
+  n.tick ||= {};
+  n.list ||= dayList();
+  return n;
+}
+const noteOf = d => d === today() ? noteToday() : S.notes[d];
+const noteDone = n => { const l = n.list; return { all: l.k.length + l.w.length + 1, done: Object.keys(n.tick).length }; };
+const hotKana = () => Object.keys(KI).filter(c => kanaHot(c));
+
+const tick = (key, on, name) => `<button class="tick" data-a="ntick" data-v="${esc(key)}" role="checkbox" aria-checked="${!!on}" aria-label="记住了 ${esc(name)}"></button>`;
+function noteKana(ch, n) {
+  const it = KI[ch], base = it.key ? KN[it.key] : null, mine = S.knote[ch]?.t, key = "k:" + ch, on = n.tick[key];
+  const text = mine || (base ? kPick(it, base.pic, base.kpic) : it.kind === "yoon" ? "两个假名合成一拍，一口气读完。" : "在基础假名上加符号，读音变成浊音或半浊音。");
+  return `<div class="nk${on ? " ok" : ""}"><button class="nk-g kf" lang="ja" data-a="kpeek" data-v="${ch}" aria-label="查看 ${ch}">${ch}</button>
+    <div class="nk-t"><b class="pen">${soundOf(it)}</b><p class="${mine ? "pen" : ""}">${esc(text)}</p></div>${tick(key, on, ch)}</div>`;
+}
+function noteWord(key, n) {
+  const hit = WORD[key];
+  if (!hit) return "";
+  const { w } = hit, mine = S.wnote[key]?.t || "", on = n.tick[key], open = NB.edit === key;
+  return `<div class="nw${on ? " ok" : ""}">${tick(key, on, w[0])}
+    <div class="nw-m"><b lang="ja">${noRo(() => wordHtml(w, true))}</b><span class="pen">${romaji(w[1])}</span></div>
+    <div class="nw-z">${esc(w[2])}</div>
+    <div class="nw-a">${soundBtn(w[1])}<button class="pencil${mine ? " has" : ""}" data-a="nedit" data-v="${esc(key)}" aria-label="给 ${esc(w[0])} 写记法">${PENCIL}</button></div>
+    ${open ? `<input class="nw-in" id="w-note" data-k="${esc(key)}" value="${esc(mine)}" placeholder="写下这个词的记法" aria-label="${esc(w[0])} 的记法">` : mine ? `<p class="nw-note pen">${esc(mine)}</p>` : ""}</div>`;
+}
+function noteGram(g, n) {
+  const key = "g:" + g.id, on = n.tick[key];
+  return `<section class="stick${on ? " ok" : ""}"><div class="stick-top"><div><small>今天的语法 · 第 ${g.id} 关</small><h3 lang="ja">${ruby(esc(g.t))}</h3></div>${tick(key, on, g.t)}</div>
+    <p class="stick-m" lang="ja">${ruby(esc(g.m))}</p><p class="stick-f" lang="ja">${ruby(esc(g.f))}</p>
+    ${exRow(g.ex[0])}<button class="link" data-a="gplay" data-v="${g.id}">去闯这一关</button></section>`;
+}
+const PENCIL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4L16 5a2 2 0 0 1 3 3L8 19z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+function noteView() {
+  const t = today(), d = NB.day || t, n = noteOf(d);
+  if (!n?.list) { NB.day = ""; return noteView(); }
+  const l = n.list, dt = dayOf(d), no = Object.keys(S.notes).filter(k => k <= d).length, g = N5G[l.g - 1];
+  const st = noteDone(n), hot = hotKana(), days = Object.keys(S.notes).sort().slice(-14), stamped = active(d);
+  const head = `<header class="nb-head"><div class="nb-title"><h1>${d === t ? "今日要记" : "往日笔记"}</h1><p>${st.done ? `记住了 ${st.done} / ${st.all} 项` : `一共 ${st.all} 项，记住一项划掉一项`}</p></div>
+    <div class="nb-no"><span>No.<b>${no}</b></span><span>Date<b>${dt.getMonth() + 1} . ${pad(dt.getDate())}</b><b class="nb-w" lang="ja">${WEEK_JA[dt.getDay()]}</b></span></div>
+    ${stamped ? `<div class="nb-stamp" aria-label="这天已打卡"><span>済</span></div>` : ""}</header>`;
+  const left = `${l.k.length ? `<section class="nb-sec"><h2><span>假名</span></h2><div class="nks">${l.k.map(c => noteKana(c, n)).join("")}</div></section>` : ""}
+    <section class="nb-sec"><h2><span>单词</span></h2><div class="nws">${l.w.map(k => noteWord(k, n)).join("") || `<p class="nb-none">这天没有要记的单词。</p>`}</div></section>`;
+  const right = `${g ? noteGram(g, n) : ""}
+    <section class="nb-sec"><h2><label for="nb-text"><span>我的笔记</span></label></h2><div class="lined"><textarea id="nb-text" rows="8" placeholder="写下今天的记忆方法、容易错的地方，或者想问的问题">${esc(n.t || "")}</textarea></div></section>
+    <section class="nb-sec"><h2><span>不熟的假名</span><small>${hot.length} 个</small></h2>${hot.length ? `<div class="hots">${hot.map(c => `<button data-a="kpeek" data-v="${c}"><span class="kf" lang="ja">${c}</span><i>${soundOf(KI[c])}</i></button>`).join("")}</div>` : `<p class="nb-none">点句子里的假名，或者在五十音字表里标记，都会收到这里。</p>`}</section>`;
+  const strip = days.length > 1 ? `<div class="nb-days" role="group" aria-label="往日笔记">${days.map(k => `<button data-a="nday" data-v="${k}" aria-pressed="${k === d}"><b>${Number(k.slice(8))}</b><small>${Number(k.slice(5, 7))} 月</small>${S.notes[k].t ? "<i></i>" : ""}</button>`).join("")}</div>` : "";
+  return `${strip}<article class="nb"><div class="nb-page">${head}${left}</div><div class="nb-page">${right}</div></article>
+    ${PWA ? `<div class="nb-foot"><button class="btn ghost" data-a="nprint">打印这一页，用笔抄写</button></div>` : ""}`;
+}
+function homeMemo() {
+  const n = noteToday(), s = noteDone(n), l = n.list;
+  const chips = [...l.k.slice(0, 4).map(c => `<span class="kf" lang="ja">${c}</span>`), ...l.w.slice(0, 3).map(k => `<span lang="ja">${esc(WORD[k]?.w[0] || "")}</span>`)].join("");
+  return `<button class="memo" data-a="tab" data-v="note"><span class="memo-top"><b>今日要记</b><small>${s.done} / ${s.all}</small></span><span class="memo-list">${chips}</span><span class="memo-go">打开笔记本</span></button>`;
+}
+const fitNote = el => { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; };
+
+/* ---------- 打印 ----------
+   方格手写单：第一格是范字，后面三格描红，其余留空 */
+function printHtml(d) {
+  const n = S.notes[d], l = n.list, dt = dayOf(d), g = N5G[l.g - 1];
+  const cell = (ch = "", cls = "") => `<span class="pc ${cls}">${ch}</span>`;
+  const kana = l.k.map(ch => `<div class="p-row"><span class="p-ro">${soundOf(KI[ch])}</span>${cell(ch, "m")}${cell(ch, "t")}${cell(ch, "t")}${cell(ch, "t")}${Array(7).fill(cell()).join("")}</div>`).join("");
+  const words = l.w.filter(k => WORD[k]).map(k => { const { w } = WORD[k]; return `<tr><td class="p-w" lang="ja">${esc(w[0])}</td><td><span lang="ja">${esc(w[1])}</span><br><small>${romaji(w[1])}</small></td><td>${esc(w[2])}</td><td class="p-line"></td></tr>`; }).join("");
+  return `<header class="p-head"><div><h1>各駅停車 手写单</h1></div><div class="p-no">No. ${Object.keys(S.notes).filter(k => k <= d).length}　Date ${dt.getFullYear()} . ${dt.getMonth() + 1} . ${pad(dt.getDate())}（<span lang="ja">${WEEK_JA[dt.getDay()]}</span>）</div></header>
+    ${kana ? `<section><h2>假名：看范字，描三遍，再默写</h2>${kana}</section>` : ""}
+    <section><h2>单词：边写边读出声</h2><table class="p-t"><tbody>${words}</tbody></table></section>
+    ${g ? `<section><h2>语法：${esc(g.t)}　${esc(g.m)}</h2><p class="p-f">${esc(g.f)}</p><p lang="ja">${plain(g.ex[0][0])}　${esc(g.ex[0][1])}</p><div class="p-lines"></div></section>` : ""}
+    ${n.t ? `<section><h2>我的笔记</h2><p class="p-note">${esc(n.t)}</p></section>` : ""}`;
+}
+
+Object.assign(ACT, {
+  kpeek(v) { peekOpen(v); say(kText(v)); },
+  peekClose,
+  kmark(v) {
+    S.kmark[K.peek] = { v: v === "1", at: Date.now() };
+    save();
+    peekOpen(K.peek);
+    repaint();
+  },
+  kmarkT(v) { S.kmark[v] = { v: !kanaHot(v), at: Date.now() }; save(); render(); },
+  kmarking() { K.marking = !K.marking; render(); },
+  ntick(v) {
+    const n = S.notes[NB.day || today()];
+    if (n.tick[v]) delete n.tick[v]; else n.tick[v] = 1;
+    n.at = Date.now();
+    save(); render();
+  },
+  nday(v) { NB.day = v === today() ? "" : v; NB.edit = ""; render(); },
+  nedit(v) {
+    NB.edit = NB.edit === v ? "" : v;
+    render();
+    document.getElementById("w-note")?.focus();
+  },
+  nprint() {
+    let el = document.getElementById("print");
+    if (!el) { el = document.createElement("div"); el.id = "print"; document.body.append(el); }
+    el.innerHTML = printHtml(NB.day || today());
+    window.print();
+  },
+  roSet(v) { S.set.ro = v; save(); repaint(); },
+  roCycle() {
+    const next = { smart: "all", all: "off", off: "smart" }[S.set.ro];
+    S.set.ro = next; save(); repaint();
+    toast({ smart: "只给不熟的假名注音", all: "全部注音", off: "关闭注音" }[next]);
+  },
+});
+document.addEventListener("input", e => {
+  const el = e.target;
+  if (el.id === "nb-text") {
+    const n = S.notes[NB.day || today()];
+    n.t = el.value; n.at = Date.now();
+    fitNote(el); save();
+  }
+  if (el.id === "k-note") { S.knote[K.peek] = { t: el.value.trim(), at: Date.now() }; save(); }
+  if (el.id === "w-note") { S.wnote[el.dataset.k] = { t: el.value.trim(), at: Date.now() }; save(); }
+});
+document.addEventListener("change", e => { if (e.target.id === "w-note" || e.target.id === "k-note") { NB.edit = ""; if (e.target.id === "w-note") render(); else repaint(); } });
 /* ---------- 保存文件 ---------- */
 /* 在 Claude 里走下载能力；手机上用系统分享，可以存到相册或文件；电脑上走普通下载 */
 async function saveFile(name, blob) {
@@ -3610,7 +4081,7 @@ const FMT = `
 
 const str = v => typeof v === "string" ? v : "";
 /* 流式输出时 { 可能还没等到 }，先藏起来 */
-const rubyAi = s => ruby(esc(s)).replace(/\{[^}]*(\}|$)/g, "");
+const rubyAi = s => ruby(esc(s).replace(/\{[^}]*$/, "")).replace(/\{[^}]*\}/g, "");
 const inline = s => rubyAi(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
 
 let sample = null;
