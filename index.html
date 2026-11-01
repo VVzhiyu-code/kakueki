@@ -577,7 +577,7 @@ svg .kbox { fill: var(--plate); }
 .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px; padding: 2px; background: var(--rule); border-radius: var(--r); }
 .seg button { padding: 8px 6px; font-size: 14px; color: var(--ink-2); border-radius: 4px; }
 .seg button[aria-pressed="true"] { background: var(--plate); color: var(--ink); font-weight: 600; }
-.set-col { display: grid; gap: 8px; justify-content: stretch; }
+.set-col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 
 /* 假名小卡 */
 .sheet-bg { position: fixed; inset: 0; z-index: 29; background: color-mix(in srgb, var(--ink) 45%, transparent); }
@@ -704,31 +704,45 @@ svg .kbox { fill: var(--plate); }
   .nk-t p { font-size: 13px; }
 }
 
-/* 打印：只留手写单 */
+/* 打印：只留手写单，一页 A4 放完，剩下的空间留给自由练习 */
 #print { display: none; }
 @media print {
   @page { size: A4; margin: 11mm 12mm; }
-  body { background: #fff; color: #111; font-size: 11pt; }
+  html, body { height: auto; background: #fff; color: #111; font-size: 11pt; }
   #app, #ses, #peek, .toast { display: none !important; }
-  #print { display: block; }
-  #print section { break-inside: avoid; margin-top: 6mm; }
+  #print { display: flex; flex-direction: column; gap: 4.500mm; min-height: 272mm; }
+  #print section { break-inside: avoid; }
   #print h1 { font-family: var(--ja); font-size: 15pt; font-weight: 900; letter-spacing: .08em; }
-  #print h2 { font-size: 10.500pt; font-weight: 700; margin-bottom: 2mm; }
+  #print h2 { margin-bottom: 1.5mm; font-size: 10.500pt; font-weight: 700; }
   .p-head { display: flex; justify-content: space-between; align-items: end; padding-bottom: 2mm; border-bottom: .6mm solid #111; }
   .p-no { font-family: var(--num); font-size: 11pt; }
-  .p-row { display: flex; align-items: center; margin-bottom: 1mm; }
-  .p-ro { width: 9mm; font-family: var(--num); font-size: 11pt; color: #1c5fa8; }
-  .pc { display: grid; place-items: center; width: 15.500mm; height: 15.500mm; margin-left: -.2mm; font-family: var(--kf); font-size: 28pt; font-weight: 600; line-height: 1; border: .2mm solid #999; background-image: linear-gradient(#ccc, #ccc), linear-gradient(#ccc, #ccc); background-size: 100% .1mm, .1mm 100%; background-position: center; background-repeat: no-repeat; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .p-row { display: grid; grid-template-columns: 8mm repeat(12, minmax(0, 1fr)); align-items: center; margin-bottom: 1mm; padding-right: .3mm; }
+  .p-ro { font-family: var(--num); font-size: 11pt; color: #1c5fa8; }
+  .pc { display: grid; place-items: center; aspect-ratio: 1; font-family: var(--kf); font-size: 25pt; font-weight: 600; line-height: 1; border: .2mm solid #999; border-left-width: 0; background-image: linear-gradient(#ccc, #ccc), linear-gradient(#ccc, #ccc); background-size: 100% .1mm, .1mm 100%; background-position: center; background-repeat: no-repeat; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .p-ro + .pc { border-left-width: .2mm; }
   .pc.t { color: #d4d4d4; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .p-t { width: 100%; border-collapse: collapse; }
-  .p-t td { padding: 1.4mm 2mm 1.4mm 0; border-bottom: .2mm solid #999; vertical-align: bottom; font-size: 10pt; }
+  .p-t td { height: 8mm; padding: 0 2mm 0 0; border-bottom: .2mm solid #999; vertical-align: middle; font-size: 10pt; }
   .p-t small { font-family: var(--num); font-size: 10pt; color: #1c5fa8; }
-  .p-w { width: 24mm; font-family: var(--ja); font-size: 13pt; font-weight: 700; }
-  .p-line { width: 72mm; }
+  .p-w { width: 25mm; font-family: var(--ja); font-size: 13pt; font-weight: 700; }
+  .p-r { width: 50mm; }
+  .p-z { width: 34mm; }
+  .p-t .p-line { border-left: .1mm dashed #bbb; }
   .p-f { font-size: 10pt; color: #444; }
-  .p-lines { height: 24mm; margin-top: 2mm; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 7.900mm, #999 7.900mm, #999 8mm); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .p-ex { font-size: 11pt; }
   .p-note { white-space: pre-wrap; font-size: 10.500pt; }
+  .p-fill { display: flex; flex-direction: column; flex: 1; min-height: 20mm; }
+  .p-lines { flex: 1; min-height: 12mm; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 7.900mm, #999 7.900mm, #999 8mm); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
+
+/* 备份与同步 */
+.set label small { display: block; font-size: 13px; color: var(--ink-3); }
+.set-col .field { width: 100%; flex: none; }
+.set-col .row .field { flex: 1 1 0; width: 0; }
+.s-err { color: var(--stamp) !important; }
+.s-note { font-size: 12px; color: var(--ink-3); }
+#backup-zone.drag { outline: 2px dashed var(--line-deep); outline-offset: 2px; }
+.btn.ghost:disabled { color: var(--ink-3); background: none; }
 </style>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="ink"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.1 1.550"/><feComposite in="SourceGraphic" operator="in"/></filter></svg>
 <div id="app"></div>
@@ -2135,7 +2149,7 @@ function autoRuby(s) {
 }
 
 /* ---------- 进度 ---------- */
-const blank = () => ({ v: 1, epoch: 0, t: 0, xp: 0, days: {}, done: {}, srs: {}, my: {}, plan: null, kana: {}, kdone: {}, kplace: {}, kbest: {}, gram: {}, ba: {}, fz: { n: 1, at: 0 }, name: "", goal: 40, kmark: {}, knote: {}, wnote: {}, notes: {}, set: { furi: true, slow: false, ro: "smart" } });
+const blank = () => ({ v: 1, epoch: 0, t: 0, xp: 0, days: {}, done: {}, srs: {}, my: {}, plan: null, kana: {}, kdone: {}, kplace: {}, kbest: {}, gram: {}, ba: {}, fz: { n: 1, at: 0 }, name: "", goal: 40, kmark: {}, knote: {}, wnote: {}, notes: {}, set: { furi: true, slow: false, ro: "smart", sfx: true } });
 function load() {
   try { const r = localStorage.getItem(KEY); if (r) { const o = JSON.parse(r); return { ...blank(), ...o, set: { ...blank().set, ...o.set } }; } } catch {}
   return blank();
@@ -2227,7 +2241,7 @@ for (const l of LESSONS) {
 /* 导师词表收进来的词没有所属课程，归到这个虚拟的一站，干扰项取自全部课程 */
 const MY = { id: LESSONS.length, words: [] };
 function registerMy() {
-  S.my ||= {}; S.kana ||= {}; S.kdone ||= {}; S.kplace ||= {}; S.kbest ||= {}; S.gram ||= {}; S.ba ||= {}; S.fz ||= { n: 1, at: 0 }; S.goal ||= 40; S.name ??= ""; S.kmark ||= {}; S.knote ||= {}; S.wnote ||= {}; S.notes ||= {}; S.set.ro ||= "smart";
+  S.my ||= {}; S.kana ||= {}; S.kdone ||= {}; S.kplace ||= {}; S.kbest ||= {}; S.gram ||= {}; S.ba ||= {}; S.fz ||= { n: 1, at: 0 }; S.goal ||= 40; S.name ??= ""; S.kmark ||= {}; S.knote ||= {}; S.wnote ||= {}; S.notes ||= {}; S.set.ro ||= "smart"; S.set.sfx ??= true;
   MY.words = Object.values(S.my);
   for (const w of MY.words) WORD["w:" + w[0]] = { w, l: MY };
 }
@@ -2268,15 +2282,19 @@ function stopSound() {
   snd.src = null;
   if (tts.ok) speechSynthesis.cancel();
 }
+function audioCtx() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  return AC ? snd.ctx ||= new AC() : null;
+}
 /* 有的页面环境不让 audio 元素放 data 地址，这时解码后交给 Web Audio */
 async function playBuffer(b64, onend) {
   try {
-    snd.ctx ||= new (window.AudioContext || window.webkitAudioContext)();
-    await snd.ctx.resume();
+    const ctx = audioCtx();
+    await ctx.resume();
     const buf = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-    const src = snd.ctx.createBufferSource();
-    src.buffer = await snd.ctx.decodeAudioData(buf.buffer);
-    src.connect(snd.ctx.destination);
+    const src = ctx.createBufferSource();
+    src.buffer = await ctx.decodeAudioData(buf.buffer);
+    src.connect(ctx.destination);
     src.onended = () => onend?.();
     snd.src = src; src.start();
   } catch { toast("录音放不出来，请检查音量和声音权限"); }
@@ -2421,6 +2439,7 @@ function checkTiles() {
 }
 function settle(st, ok, picked) {
   ses.checked = { ok, picked };
+  if (picked !== null) (ok ? ses.fast ? sfx.slash : sfx.correct : sfx.wrong)();
   const first = !st.retry;
   ses.tried += first ? 1 : 0;
   if (ok) { if (first) { ses.correct++; ses.xp += 2; } }
@@ -2723,11 +2742,13 @@ function bookView() {
       <div class="set"><div>每日目标<small>只影响目标进度，学一次就算打卡</small></div><div class="goal-pick">${DAY_GOALS.map(([n, t, s]) => `<button class="chip" data-a="setGoal" data-v="${n}" aria-pressed="${S.goal === n}" title="${s}">${t} ${n}</button>`).join("")}</div></div>
       <div class="set"><div>显示振假名<small>汉字上方标注读音</small></div><button class="switch" role="switch" aria-checked="${S.set.furi}" aria-label="显示振假名" data-a="setFuri"></button></div>
       <div class="set set-col"><div>罗马音注音<small>像拼音一样标在假名下面，熟了自动消失</small></div><div class="seg" role="group" aria-label="罗马音注音">${[["smart", "只标不熟的"], ["all", "全部标注"], ["off", "不标注"]].map(([k, t]) => `<button data-a="roSet" data-v="${k}" aria-pressed="${S.set.ro === k}">${t}</button>`).join("")}</div></div>
+      <div class="set"><div>音效和震动<small>答题、翻卡和升级时的提示，震动只在部分安卓手机上有</small></div><button class="switch" role="switch" aria-checked="${S.set.sfx}" aria-label="音效和震动" data-a="setSfx"></button></div>
       <div class="set"><div>慢速朗读<small>听不清时打开</small></div><button class="switch" role="switch" aria-checked="${S.set.slow}" aria-label="慢速朗读" data-a="setSlow"></button></div>
       <div class="set"><div>进度保存<small>${syncText}</small></div></div>
-      ${backupRows()}
+      ${PWA ? pwaRows() : ""}
       <div class="set"><div>朗读<small>${voiceText}</small></div>${soundBtn("こんにちは", "试听")}</div>
-      <div class="set"><div>重置进度<small>清空所有记录，无法恢复</small></div>${confirmReset ? `<button class="chip" data-a="reset" style="color:var(--stamp);border-color:var(--stamp)">确认清空</button>` : `<button class="chip" data-a="askReset">重置</button>`}</div></section></div></div>`;
+      <div class="set"><div>重置进度<small>清空所有记录，无法恢复</small></div>${confirmReset ? `<button class="chip" data-a="reset" style="color:var(--stamp);border-color:var(--stamp)">确认清空</button>` : `<button class="chip" data-a="askReset">重置</button>`}</div></section>
+    ${syncPanel()}</div></div>`;
 }
 function render() {
   document.body.classList.toggle("no-furi", !S.set.furi);
@@ -2769,12 +2790,17 @@ const ACT = {
   wmode(v) { wordFilter.mode = v; render(); },
   setFuri() { S.set.furi = !S.set.furi; save(); render(); },
   setSlow() { S.set.slow = !S.set.slow; save(); render(); },
+  setSfx() { S.set.sfx = !S.set.sfx; save(); sfx.correct(); render(); },
   askReset() { confirmReset = true; render(); },
   reset() { const epoch = (S.epoch || 0) + 1; S = { ...blank(), epoch }; clearT(); registerMy(); confirmReset = false; save(); render(); toast("进度已清空"); },
 };
+/* 这些操作有自己的声音或会朗读，不再叠加点击音 */
+const QUIET = new Set(["say", "slow", "mc", "check", "idk", "ngrade", "nflip", "kpeek", "kmt", "kspick", "playAll", "setSfx", "review", "lesson", "ncards", "gplay"]);
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-a]");
-  if (b && !b.disabled) ACT[b.dataset.a]?.(b.dataset.v, b);
+  if (!b || b.disabled) return;
+  if (!QUIET.has(b.dataset.a)) sfx.click();
+  ACT[b.dataset.a]?.(b.dataset.v, b);
 });
 document.addEventListener("input", e => {
   if (e.target.id === "word-search") { wordFilter.q = e.target.value; document.getElementById("wlist").innerHTML = wordRows(); }
@@ -2871,6 +2897,81 @@ function kanjiHtml(base, rd) {
   if (S.set.ro === "smart" && !beats(rd).some(moraWeak)) return html;
   return `<span class="u"><span class="g">${html}</span><i>${romaji(rd)}</i></span>`;
 }
+/* ---------- 音效 ----------
+   全部用 Web Audio 现场合成，不用音频文件，所以离线也能响。
+   SFX 里每个函数只搭建声音，sfx 负责播放；测试时可以把 SFX 接到离线上下文里检查波形。
+   音量都压得很低，不盖过读音。S.set.sfx 关掉后不发声也不震动 */
+const noiseOf = (c, sec) => {
+  const buf = c.createBuffer(1, Math.ceil(c.sampleRate * sec), c.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const src = c.createBufferSource();
+  src.buffer = buf;
+  return src;
+};
+/* 音量包络：很快起音，再按指数衰减，避免开头和结尾的爆音 */
+const env = (c, out, t, peak, sec) => {
+  const g = c.createGain();
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(peak, t + .006);
+  g.gain.exponentialRampToValueAtTime(.0001, t + sec);
+  g.connect(out);
+  return g;
+};
+function tone(c, out, t, type, from, to, peak, sec) {
+  const o = c.createOscillator();
+  o.type = type;
+  o.frequency.setValueAtTime(from, t);
+  if (to !== from) o.frequency.exponentialRampToValueAtTime(to, t + sec);
+  o.connect(env(c, out, t, peak, sec));
+  o.start(t); o.stop(t + sec + .02);
+}
+function sweep(c, out, t, type, from, to, peak, sec) {
+  const n = noiseOf(c, sec + .02), f = c.createBiquadFilter();
+  f.type = type; f.Q.value = 1.2;
+  f.frequency.setValueAtTime(from, t);
+  f.frequency.exponentialRampToValueAtTime(to, t + sec);
+  n.connect(f); f.connect(env(c, out, t, peak, sec));
+  n.start(t); n.stop(t + sec + .02);
+}
+const SFX = {
+  click(c, t, out) { tone(c, out, t, "sine", 1900, 900, .07, .04); },
+  flip(c, t, out) { sweep(c, out, t, "lowpass", 1100, 280, .16, .16); },
+  correct(c, t, out) {
+    tone(c, out, t, "sine", 523.25, 523.25, .13, .16);
+    tone(c, out, t + .09, "sine", 783.99, 783.99, .15, .28);
+  },
+  wrong(c, t, out) {
+    const f = c.createBiquadFilter();
+    f.type = "lowpass"; f.frequency.value = 700; f.connect(out);
+    tone(c, f, t, "sawtooth", 150, 88, .16, .26);
+  },
+  slash(c, t, out) { sweep(c, out, t, "bandpass", 3400, 420, .3, .2); },
+  levelUp(c, t, out) {
+    const f = c.createBiquadFilter();
+    f.type = "lowpass"; f.frequency.value = 2600; f.connect(out);
+    [[523.25, 0, .13], [659.25, .11, .13], [783.99, .22, .13], [1046.5, .33, .42]].forEach(([hz, at, sec]) => {
+      tone(c, f, t + at, "sawtooth", hz, hz, .09, sec);
+      tone(c, f, t + at, "triangle", hz, hz, .07, sec);
+    });
+  },
+};
+const playSfx = name => {
+  if (!S.set.sfx) return;
+  const c = audioCtx();
+  if (!c) return;
+  c.resume?.();
+  SFX[name](c, c.currentTime + .005, c.destination);
+};
+/* 震动只有部分安卓手机支持，其他设备上什么也不做 */
+const buzz = ms => { if (S.set.sfx) navigator.vibrate?.(ms); };
+const sfx = {
+  click: () => playSfx("click"),
+  flip: () => playSfx("flip"),
+  correct: () => { playSfx("correct"); buzz(12); },
+  wrong: () => { playSfx("wrong"); buzz([30, 40, 30]); },
+  slash: () => playSfx("slash"),
+  levelUp: () => { playSfx("levelUp"); buzz([15, 30, 15, 30, 40]); },
+};
 /* ---------- 五十音：数据索引 ---------- */
 const K = { tab: "path", chart: "q", script: "h", hide: false, marking: false, peek: null, run: 0, playing: false, scope: "h" };
 const KI = {};
@@ -3054,7 +3155,7 @@ function playStrokes(svg) {
   const paths = [...svg.querySelectorAll(".km")], nums = [...svg.querySelectorAll(".kn")], ink = svg.querySelector(".ki");
   svg.getAnimations({ subtree: true }).forEach(a => a.cancel());
   ink.setAttribute("mask", `url(#${svg.dataset.mask})`);
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
   let t = 150;
   paths.forEach((p, i) => {
     const d = Math.min(1500, 260 + p.getTotalLength() * 9);
@@ -3421,6 +3522,7 @@ Object.assign(ACT, {
   },
   kspick(v) {
     const s = ses.sp, ok = v === s.q.ro;
+    (ok ? sfx.slash : sfx.wrong)();
     s.score += ok ? 1 : 0; s.miss += ok ? 0 : 1;
     say(kText(s.q.ch));
     newSpeedQ(s); renderSes();
@@ -3432,12 +3534,14 @@ Object.assign(ACT, {
     const o = m.tiles[m.pick];
     if (o.pair === t.pair) {
       o.gone = t.gone = true; m.pick = null;
+      sfx.correct();
       if (m.tiles.every(x => x.gone)) {
         if (m.round === 3) { m.left = Math.round((Date.now() - m.at) / 1000); return finish(); }
         m.round++; newMatch(m);
       }
     } else {
       m.miss++; o.bad = t.bad = true; m.pick = null;
+      sfx.wrong();
       renderSes();
       setTimeout(() => { if (ses?.m === m) { o.bad = t.bad = false; renderSes(); } }, 450);
       return;
@@ -3524,6 +3628,8 @@ function credit() {
   const earned = BADGES.filter(b => !S.ba[b[0]] && b[3]());
   earned.forEach(b => { S.ba[b[0]] = t; });
   ses.gain = { first, goal, fz, run, lv: lvOf(S.xp).n, up: lvOf(S.xp).n > lv0, earned };
+  (ses.gain.up || earned.length ? sfx.levelUp : goal || first ? sfx.correct : sfx.click)();
+  queueCloud();
 }
 function gainHtml() {
   const g = ses.gain;
@@ -3802,6 +3908,7 @@ Object.assign(ACT, {
     if (ses.flip) return;
     const st = ses.steps[ses.i];
     ses.flip = true;
+    sfx.flip();
     sesEl.querySelector(".fc").classList.add("on");
     sesEl.querySelector(".ses-foot > div").innerHTML = CARD_GRADE;
     say(n5Of(st.key)[1]);
@@ -3811,6 +3918,7 @@ Object.assign(ACT, {
     if (!ses.flip || ses.flying) return;
     ses.flying = true;
     grade3(st.key, g);
+    [sfx.flip, sfx.click, sfx.correct][g]();
     if (!st.again) { ses.tried++; ses.xp++; if (g === 2) ses.correct++; }
     if (g === 0) ses.steps.push({ ...st, again: true, n: ses.steps.length + 1, i: ses.steps.length });
     sesEl.querySelector(".fc").classList.add(["fly-l", "fly-d", "fly-r"][g]);
@@ -3930,13 +4038,14 @@ const fitNote = el => { el.style.height = "auto"; el.style.height = el.scrollHei
 function printHtml(d) {
   const n = S.notes[d], l = n.list, dt = dayOf(d), g = N5G[l.g - 1];
   const cell = (ch = "", cls = "") => `<span class="pc ${cls}">${ch}</span>`;
-  const kana = l.k.map(ch => `<div class="p-row"><span class="p-ro">${soundOf(KI[ch])}</span>${cell(ch, "m")}${cell(ch, "t")}${cell(ch, "t")}${cell(ch, "t")}${Array(7).fill(cell()).join("")}</div>`).join("");
-  const words = l.w.filter(k => WORD[k]).map(k => { const { w } = WORD[k]; return `<tr><td class="p-w" lang="ja">${esc(w[0])}</td><td><span lang="ja">${esc(w[1])}</span><br><small>${romaji(w[1])}</small></td><td>${esc(w[2])}</td><td class="p-line"></td></tr>`; }).join("");
-  return `<header class="p-head"><div><h1>各駅停車 手写单</h1></div><div class="p-no">No. ${Object.keys(S.notes).filter(k => k <= d).length}　Date ${dt.getFullYear()} . ${dt.getMonth() + 1} . ${pad(dt.getDate())}（<span lang="ja">${WEEK_JA[dt.getDay()]}</span>）</div></header>
+  const kana = l.k.map(ch => `<div class="p-row"><span class="p-ro">${soundOf(KI[ch])}</span>${cell(ch, "m")}${cell(ch, "t")}${cell(ch, "t")}${cell(ch, "t")}${Array(8).fill(cell()).join("")}</div>`).join("");
+  const words = l.w.filter(k => WORD[k]).map(k => { const { w } = WORD[k]; return `<tr><td class="p-w" lang="ja">${esc(w[0])}</td><td class="p-r"><span lang="ja">${esc(w[1])}</span> <small>${romaji(w[1])}</small></td><td class="p-z">${esc(w[2])}</td><td class="p-line"></td></tr>`; }).join("");
+  return `<header class="p-head"><h1>各駅停車 手写单</h1><div class="p-no">No. ${Object.keys(S.notes).filter(k => k <= d).length}　Date ${dt.getFullYear()} . ${dt.getMonth() + 1} . ${pad(dt.getDate())}（<span lang="ja">${WEEK_JA[dt.getDay()]}</span>）</div></header>
     ${kana ? `<section><h2>假名：看范字，描三遍，再默写</h2>${kana}</section>` : ""}
     <section><h2>单词：边写边读出声</h2><table class="p-t"><tbody>${words}</tbody></table></section>
-    ${g ? `<section><h2>语法：${esc(g.t)}　${esc(g.m)}</h2><p class="p-f">${esc(g.f)}</p><p lang="ja">${plain(g.ex[0][0])}　${esc(g.ex[0][1])}</p><div class="p-lines"></div></section>` : ""}
-    ${n.t ? `<section><h2>我的笔记</h2><p class="p-note">${esc(n.t)}</p></section>` : ""}`;
+    ${g ? `<section><h2>语法：${esc(g.t)}　${esc(g.m)}</h2><p class="p-f">${esc(g.f)}</p><p class="p-ex"><span lang="ja">${plain(g.ex[0][0])}</span>　${esc(g.ex[0][1])}</p></section>` : ""}
+    ${n.t ? `<section><h2>我的笔记</h2><p class="p-note">${esc(n.t)}</p></section>` : ""}
+    <section class="p-fill"><h2>自由练习：抄写例句，或者默写今天的假名</h2><div class="p-lines"></div></section>`;
 }
 
 Object.assign(ACT, {
@@ -4003,26 +4112,162 @@ async function saveFile(name, blob) {
   setTimeout(() => URL.revokeObjectURL(a.href), 4e3);
 }
 
-/* ---------- 进度备份 ---------- */
-/* PWA 的进度只存在这台设备上，换手机或从 Claude 版搬过来都靠这个文件 */
-function backupRows() {
-  return `<div class="set"><div>进度备份<small>${PWA ? "进度只存在这台设备，换设备前先导出" : "导出后可以导入手机上的 PWA 版"}</small></div><div class="goal-pick"><button class="chip" data-a="backupOut">导出</button><button class="chip" data-a="backupIn">导入</button></div></div>
-    <input type="file" id="backup-file" accept=".json,application/json" hidden>${PWA ? pwaRows() : ""}`;
+/* ---------- 备份加密 ----------
+   设了备份密码时用 AES-GCM 加密，密钥由密码派生，文件里只有盐、随机数和密文 */
+const toB64 = u8 => { let s = ""; for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode(...u8.subarray(i, i + 8192)); return btoa(s); };
+const fromB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function deriveKey(pass, salt) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 200000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
 }
-function importBackup(text) {
+async function seal(text, pass) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await deriveKey(pass, salt), new TextEncoder().encode(text));
+  return JSON.stringify({ kakueki: 1, salt: toB64(salt), iv: toB64(iv), data: toB64(new Uint8Array(data)) });
+}
+async function unseal(o, pass) {
+  const key = await deriveKey(pass, fromB64(o.salt));
+  return new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: fromB64(o.iv) }, key, fromB64(o.data)));
+}
+const packBackup = () => { const body = JSON.stringify(S); return app.dav.key ? seal(body, app.dav.key) : body; };
+/* 读备份：密码不对或缺密码时抛出 key、need，文件不对时抛出 bad */
+async function readBackup(text, key) {
+  let o;
+  try { o = JSON.parse(text); } catch { throw "bad"; }
+  if (o?.salt && o.data) {
+    if (!key) throw "need";
+    try { o = JSON.parse(await unseal(o, key)); } catch { throw "key"; }
+  }
+  if (!o || o.v !== 1 || !o.days || !o.srs) throw "bad";
+  return o;
+}
+
+/* ---------- 进度备份和同步 ----------
+   PWA 的进度只存在这台设备上，换手机或从 Claude 版搬过来都靠备份文件。
+   云同步有两种：GitHub 私密 Gist，或者支持网页访问的 WebDAV。
+   账号和令牌只存在本机，不进备份文件 */
+const DAV_KEY = "kakueki.dav", DAV_FILE = "kakueki-progress.json";
+const GH_API = "https://api.github.com";
+const CLOUD_BLANK = { mode: "gh", url: "", user: "", pass: "", token: "", gist: "", key: "", auto: true, last: 0, err: "" };
+function loadDav() {
+  try { return { ...CLOUD_BLANK, ...JSON.parse(localStorage.getItem(DAV_KEY) || "{}") }; }
+  catch { return { ...CLOUD_BLANK }; }
+}
+const saveDav = () => { try { localStorage.setItem(DAV_KEY, JSON.stringify(app.dav)); } catch {} };
+const app = { prompt: null, saved: 0, busy: false, locked: "", dav: loadDav(), davBusy: false, davTimer: 0 };
+const refresh = () => { if (!ses && view === "book") render(); };
+async function importBackup(text, key = app.dav.key) {
   try {
-    const o = JSON.parse(text);
-    if (!o || o.v !== 1 || !o.days || !o.srs) throw 0;
-    S = merge(S, o);
+    S = merge(S, await readBackup(text, key));
+    app.locked = "";
     registerMy(); save(); render();
     toast("进度已导入，两边的记录合并了");
-  } catch { toast("这个文件不是各駅停車的进度备份"); }
+  } catch (e) {
+    if (e === "need" || e === "key") { app.locked = text; render(); toast(e === "need" ? "这个备份有密码，请在下面输入" : "密码不对，再试一次"); }
+    else toast("这个文件不是各駅停車的进度备份");
+  }
+}
+const CLOUD_ERR = {
+  auth: "账号或密码不对。有的网盘要用专门的应用密码。",
+  token: "GitHub 令牌不对或已过期，创建时要勾选 gist 权限。",
+  key: "云端的备份用了别的备份密码，这里解不开。",
+  need: "云端的备份有密码，请先填备份密码。",
+  bad: "云端有同名文件，但不是各駅停車的进度。",
+  path: "服务器上找不到这个文件夹，请先在网盘里建好。",
+  http: "这个页面是 https 的，地址也要用 https 开头。",
+};
+const CLOUD_NET = { dav: "连不上服务器。可能是地址不对，或者这个网盘不允许网页直接访问（CORS）。", gh: "连不上 GitHub，请检查网络。" };
+
+const davUrl = () => app.dav.url.trim().replace(/\/*$/, "/") + DAV_FILE;
+const davAuth = () => ({ Authorization: "Basic " + btoa(unescape(encodeURIComponent(`${app.dav.user}:${app.dav.pass}`))) });
+async function davPull() {
+  if (location.protocol === "https:" && /^http:/i.test(app.dav.url.trim())) throw "http";
+  const r = await fetch(davUrl(), { headers: davAuth(), cache: "no-store" });
+  if (r.status === 401 || r.status === 403) throw "auth";
+  if (r.status === 404) return null;
+  if (!r.ok) throw r.status;
+  return r.text();
+}
+async function davPush(body) {
+  const r = await fetch(davUrl(), { method: "PUT", headers: { ...davAuth(), "Content-Type": "application/json" }, body });
+  if (r.status === 401 || r.status === 403) throw "auth";
+  if (r.status === 404 || r.status === 409) throw "path";
+  if (!r.ok) throw r.status;
+}
+const ghHead = () => ({ Authorization: `Bearer ${app.dav.token.trim()}`, Accept: "application/vnd.github+json" });
+async function ghJson(path, init = {}) {
+  const r = await fetch(GH_API + path, { cache: "no-store", ...init, headers: { ...ghHead(), ...init.headers } });
+  if (r.status === 401 || r.status === 403) throw "token";
+  if (r.status === 404) return null;
+  if (!r.ok) throw r.status;
+  return r.json();
+}
+/* 第二台设备不知道 Gist 编号，按文件名在账号里找 */
+async function ghPull() {
+  const d = app.dav;
+  if (!d.gist) d.gist = (await ghJson("/gists?per_page=100"))?.find(g => g.files?.[DAV_FILE])?.id || "";
+  if (!d.gist) return null;
+  const g = await ghJson(`/gists/${d.gist}`), f = g?.files?.[DAV_FILE];
+  if (!f) { d.gist = ""; return null; }
+  return f.truncated ? (await fetch(f.raw_url)).text() : f.content;
+}
+async function ghPush(body) {
+  const d = app.dav, files = { [DAV_FILE]: { content: body } };
+  const g = await ghJson(d.gist ? `/gists/${d.gist}` : "/gists", { method: d.gist ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d.gist ? { files } : { description: "各駅停車学习进度", public: false, files }) });
+  if (!g) throw 404;
+  d.gist = g.id;
+}
+const CLOUD = { dav: [davPull, davPush], gh: [ghPull, ghPush] };
+const cloudReady = () => app.dav.mode === "gh" ? !!app.dav.token.trim() : !!app.dav.url.trim();
+/* 先下载云端进度和本机合并，再把合并结果传回去，这样两台设备都不会丢记录 */
+async function cloudSync() {
+  const d = app.dav, [pull, push] = CLOUD[d.mode];
+  if (!cloudReady() || app.davBusy) return false;
+  app.davBusy = true; refresh();
+  try {
+    const text = await pull();
+    if (text) { S = merge(S, await readBackup(text, d.key)); registerMy(); writeLocal(); }
+    await push(await packBackup());
+    Object.assign(d, { last: Date.now(), err: "" });
+  } catch (e) {
+    d.err = CLOUD_ERR[e] || (typeof e === "number" ? `服务器返回错误 ${e}，请稍后再试。` : CLOUD_NET[d.mode]);
+  }
+  app.davBusy = false; saveDav();
+  if (!ses) render();
+  return !d.err;
+}
+function queueCloud() {
+  if (!PWA || !app.dav.auto || !cloudReady()) return;
+  clearTimeout(app.davTimer);
+  app.davTimer = setTimeout(cloudSync, 1500);
+}
+function cloudRows() {
+  const d = app.dav, t = d.last ? new Date(d.last) : null, gh = d.mode === "gh";
+  const text = app.davBusy ? "正在同步" : d.err || (t ? `上次同步 ${t.getMonth() + 1}/${t.getDate()} ${pad(t.getHours())}:${pad(t.getMinutes())}` : "在手机和电脑之间同步进度");
+  const fields = gh ? `<a class="link" href="https://github.com/settings/tokens/new?scopes=gist&amp;description=kakueki" target="_blank" rel="noopener">创建令牌，只勾选 gist 权限</a>
+      <input class="field" id="gh-token" type="password" autocomplete="off" spellcheck="false" placeholder="粘贴 GitHub 令牌" aria-label="GitHub 令牌" value="${esc(d.token)}">
+      <small class="s-note">进度存在你账号下的私密 Gist。每台设备填同一个令牌，就会自动找到同一份进度。建议再设一个备份密码。</small>`
+    : `<input class="field" id="dav-url" type="url" inputmode="url" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="https://网盘地址/dav/文件夹/" aria-label="WebDAV 地址" value="${esc(d.url)}">
+      <div class="row"><input class="field" id="dav-user" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="账号" aria-label="WebDAV 账号" value="${esc(d.user)}"><input class="field" id="dav-pass" type="password" autocomplete="current-password" placeholder="密码" aria-label="WebDAV 密码" value="${esc(d.pass)}"></div>
+      <small class="s-note">服务器要允许网页访问（CORS）。坚果云和 pCloud 不允许，用不了。</small>`;
+  return `<div class="set set-col"><div>云同步<small class="${d.err ? "s-err" : ""}">${esc(text)}</small></div>
+      <div class="seg" role="group" aria-label="同步方式"><button data-a="cloudMode" data-v="gh" aria-pressed="${gh}">GitHub</button><button data-a="cloudMode" data-v="dav" aria-pressed="${!gh}">WebDAV</button></div>
+      ${fields}<button class="btn ghost" data-a="cloudNow" ${cloudReady() && !app.davBusy ? "" : "disabled"}>一键同步</button>
+      <small class="s-note">账号和令牌只保存在这台设备，不会写进备份文件。</small></div>
+    <div class="set"><div>学完自动同步<small>每次完成学习和打开应用时同步</small></div><button class="switch" role="switch" aria-checked="${d.auto}" aria-label="学完自动同步" data-a="cloudAuto"></button></div>`;
+}
+function syncPanel() {
+  return `<section class="panel" id="backup-zone"><div class="eyebrow">备份与同步</div>
+    <div class="set"><div>进度文件<small>${PWA ? "进度只存在这台设备，换设备前先导出" : "导出后可以导入手机上的 PWA 版"}。也可以把文件拖到这里恢复</small></div><div class="goal-pick"><button class="chip" data-a="backupOut">导出</button><button class="chip" data-a="backupIn">导入</button></div></div>
+    <input type="file" id="backup-file" accept=".json,application/json" hidden>
+    <div class="set set-col"><label for="bk-key">备份密码<small>可选。填了以后，导出的文件和云同步都会加密。忘了密码就解不开</small></label><input class="field" id="bk-key" type="password" autocomplete="new-password" placeholder="不加密就留空" value="${esc(app.dav.key)}"></div>
+    ${app.locked ? `<form class="row" data-f="unlock"><input class="field" id="bk-open" type="password" autocomplete="off" placeholder="输入这个备份的密码" aria-label="备份密码"><button class="btn">解开</button></form>` : ""}
+    ${PWA ? cloudRows() : ""}</section>`;
 }
 
 /* ---------- 安装和离线 ---------- */
-const app = { prompt: null, saved: 0, busy: false };
 const allPacks = () => [...AUDIO.clips, ...AUDIO.slow];
-const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const standalone = () => !!window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone === true;
 const isIos = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 function pwaRows() {
   const hint = isIos() ? "用 Safari 打开，点分享按钮，选“添加到主屏幕”" : "用 Chrome 打开，在菜单里选“安装应用”";
@@ -4032,7 +4277,6 @@ function pwaRows() {
   const text = app.busy ? `正在保存 ${app.saved} / ${n} 包` : done ? "全部录音已存到这台设备，没网也能听" : `已保存 ${app.saved} / ${n} 包录音，共约 20 MB`;
   return `${install}<div class="set"><div>离线录音<small>${text}</small></div>${done ? "" : `<button class="chip" data-a="pwaOffline" ${app.busy ? "disabled" : ""}>保存全部</button>`}</div>`;
 }
-const refresh = () => { if (!ses && view === "book") render(); };
 /* 只取文件，由离线缓存存下来，不解析，所以不占内存 */
 async function savedCount() {
   const hits = await Promise.all(allPacks().map(src => caches.match(src)));
@@ -4048,17 +4292,43 @@ function initPwa() {
   if (!PWA) return;
   navigator.serviceWorker?.register("sw.js");
   navigator.storage?.persist?.();
-  addEventListener("beforeinstallprompt", e => { e.preventDefault(); app.prompt = e; if (!ses && view === "book") render(); });
-  addEventListener("appinstalled", () => { app.prompt = null; toast("已安装，可以从桌面打开了"); });
+  window.addEventListener?.("beforeinstallprompt", e => { e.preventDefault(); app.prompt = e; refresh(); });
+  window.addEventListener?.("appinstalled", () => { app.prompt = null; toast("已安装，可以从桌面打开了"); });
   /* 已安装时自动存好全部正常语速的录音，没网也能学 */
   if (window.caches) navigator.serviceWorker?.ready.then(() => standalone() ? saveAudio(AUDIO.clips) : savedCount());
+  if (app.dav.auto) cloudSync();
 }
 document.addEventListener("change", e => {
-  if (e.target.id === "backup-file" && e.target.files[0]) e.target.files[0].text().then(importBackup);
+  if (e.target.id === "backup-file" && e.target.files[0]) e.target.files[0].text().then(t => importBackup(t));
+});
+document.addEventListener("input", e => {
+  const f = { "bk-key": "key", "dav-url": "url", "dav-user": "user", "dav-pass": "pass", "gh-token": "token" }[e.target.id];
+  if (!f) return;
+  app.dav[f] = e.target.value; saveDav();
+  const go = document.querySelector('[data-a="cloudNow"]');
+  if (go) go.disabled = !cloudReady() || app.davBusy;
+});
+document.addEventListener("submit", e => {
+  if (e.target.dataset?.f !== "unlock") return;
+  e.preventDefault();
+  importBackup(app.locked, document.getElementById("bk-open").value);
+});
+/* 把备份文件拖到“备份与同步”面板上就能恢复 */
+const dragZone = e => e.target.closest?.("#backup-zone");
+document.addEventListener("dragover", e => { const z = dragZone(e); if (z) { e.preventDefault(); z.classList.add("drag"); } });
+document.addEventListener("dragleave", e => dragZone(e)?.classList.remove("drag"));
+document.addEventListener("drop", e => {
+  const z = dragZone(e), f = e.dataTransfer?.files?.[0];
+  if (!z) return;
+  e.preventDefault(); z.classList.remove("drag");
+  if (f) f.text().then(t => importBackup(t));
 });
 Object.assign(ACT, {
-  backupOut() { saveFile(`各駅停車-进度-${today()}.json`, new Blob([JSON.stringify(S)], { type: "application/json" })); },
+  async backupOut() { saveFile(`各駅停車-进度-${today()}.json`, new Blob([await packBackup()], { type: "application/json" })); },
   backupIn() { document.getElementById("backup-file").click(); },
+  async cloudNow() { if (await cloudSync()) { sfx.correct(); toast("同步好了"); } else sfx.wrong(); },
+  cloudAuto() { app.dav.auto = !app.dav.auto; saveDav(); render(); },
+  cloudMode(v) { app.dav.mode = v; app.dav.err = ""; saveDav(); render(); },
   async pwaInstall() { await app.prompt?.prompt(); app.prompt = null; render(); },
   async pwaOffline() { await saveAudio(allPacks()); toast("录音都存好了"); },
 });
